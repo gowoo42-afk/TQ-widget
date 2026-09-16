@@ -13,172 +13,109 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Segoe UI", Roboto, Helvetica, sans-serif;
-      background: linear-gradient(145deg, #0b0f19 0%, #151d30 100%);
+      background: linear-gradient(150deg, #0b0f19 0%, #151d30 100%);
       color: #f3f4f6;
       display: flex;
       flex-direction: column;
-      padding: 12px 14px;
-      gap: 10px;
+      padding: 8px 10px;
+      gap: 6px;
       user-select: none;
     }
 
-    /* 상단 헤더 바 */
-    .top-bar {
+    /* 상단 요약 바 (4x2 슬림 최적화) */
+    .top-section {
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-    .app-title {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .title-text {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: -0.4px;
-      color: #f9fafb;
-    }
-    .update-badge {
-      font-size: 10px;
-      font-weight: 500;
-      color: #94a3b8;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 2px 6px;
+      background: rgba(26, 35, 54, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 10px;
+      padding: 5px 8px;
     }
 
-    /* 시그널 칩 배지 */
-    .signal-chip {
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 20px;
-      letter-spacing: -0.2px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .signal-chip::before {
-      content: "";
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-    }
-    .signal-up {
-      background: rgba(34, 197, 94, 0.16);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.25);
-    }
-    .signal-up::before { background: #4ade80; }
-
-    .signal-down {
-      background: rgba(239, 68, 68, 0.16);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.25);
-    }
-    .signal-down::before { background: #f87171; }
-
-    .signal-neutral {
-      background: rgba(148, 163, 184, 0.14);
-      color: #cbd5e1;
-      border: 1px solid rgba(148, 163, 184, 0.25);
-    }
-    .signal-neutral::before { background: #94a3b8; }
-
-    /* 메인 정보 카드 */
-    .card {
-      background: rgba(26, 35, 54, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 14px;
-      padding: 9px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    }
-
-    .card-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .price-container {
+    .left-group {
       display: flex;
       align-items: baseline;
       gap: 6px;
     }
-    .tqqq-val {
-      font-size: 18px;
+    .tqqq-price {
+      font-size: 15px;
       font-weight: 900;
-      letter-spacing: -0.3px;
       color: #ffffff;
+      letter-spacing: -0.3px;
     }
-    .change-val {
-      font-size: 12px;
+    .price-chg {
+      font-size: 11px;
       font-weight: 700;
     }
 
-    .chips-group {
+    .right-group {
       display: flex;
       align-items: center;
       gap: 4px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
     }
     .pill {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.06);
-      color: #e2e8f0;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
     }
-    .pill-accent {
-      background: rgba(99, 102, 241, 0.18);
-      color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.3);
-    }
-    .pill-return {
+    .pill-signal {
+      font-size: 10px;
       font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .signal-up {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .signal-down {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .signal-neutral {
+      background: rgba(148, 163, 184, 0.16);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.25);
     }
 
     .val-up { color: #4ade80; }
     .val-down { color: #f87171; }
 
-    /* 이평선 범례 바 */
-    .legend-bar {
+    /* 서브 정보 바 */
+    .sub-bar {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 12px;
       font-size: 9px;
       color: #94a3b8;
-      padding-top: 4px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+      padding: 0 4px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
     }
     .dot {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
-      margin-right: 3px;
     }
 
-    /* 하단 볼드 차트 */
-    .chart-container {
+    /* 차트 캔버스 영역 */
+    .chart-box {
       width: 100%;
       flex: 1;
-      min-height: 60px;
-      background: rgba(14, 20, 34, 0.45);
+      min-height: 55px;
+      background: rgba(11, 17, 30, 0.45);
       border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: 14px;
+      border-radius: 10px;
       position: relative;
-      overflow: hidden;
     }
     canvas {
       width: 100%;
@@ -193,67 +130,53 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
       color: #94a3b8;
       z-index: 20;
     }
   </style>
 </head>
 <body onclick="init()">
-  <div id="loading">✨ 위젯 동기화 중...</div>
+  <div id="loading">동기화 중...</div>
 
-  <!-- 최상단 타이틀 & 시그널 -->
-  <div class="top-bar">
-    <div class="app-title">
-      <span class="title-text">⚡ TQQQ 200일선 전략</span>
-      <span class="update-badge" id="updatedAt">갱신 대기</span>
+  <!-- 상단 요약 바 -->
+  <div class="top-section">
+    <div class="left-group">
+      <span class="tqqq-price" id="tqqqPrice">TQQQ $--</span>
+      <span class="price-chg" id="tqqqChange">-</span>
     </div>
-    <div id="todaySignal" class="signal-chip signal-neutral">-</div>
-  </div>
-
-  <!-- 메인 정보 카드 -->
-  <div class="card">
-    <div class="card-row">
-      <div class="price-container">
-        <span class="tqqq-val" id="tqqqPrice">TQQQ $--</span>
-        <span class="change-val" id="tqqqChange">-</span>
-      </div>
-      <div class="chips-group">
-        <span class="pill pill-accent" id="strategyState">상태 -</span>
-        <span class="pill" id="activeCriterion">기준 TQQQ 200일선</span>
-      </div>
-    </div>
-
-    <div class="card-row">
-      <div class="chips-group" style="justify-content: flex-start;">
-        <span class="pill" id="entryDate">진입일 -</span>
-      </div>
-      <div class="chips-group">
-        <span class="pill pill-return" id="strategyReturn">수익률 -</span>
-      </div>
-    </div>
-
-    <!-- 범례 및 실시간 수치 -->
-    <div class="legend-bar">
-      <span><span class="dot" style="background:#ffffff;"></span>TQQQ 종가</span>
-      <span><span class="dot" style="background:#38bdf8;"></span>200일선 <b id="ma200Val" style="color:#e2e8f0;">-</b></span>
-      <span id="diffFrom200" style="margin-left:auto; font-weight:700;">-</span>
+    <div class="right-group">
+      <span class="pill" id="strategyState">상태 -</span>
+      <span class="pill" id="strategyReturn">수익률 -</span>
+      <span id="todaySignal" class="pill-signal signal-neutral">-</span>
     </div>
   </div>
 
-  <!-- 하단 2-라인 볼드 차트 -->
-  <div class="chart-container">
+  <!-- 서브 범례 바 -->
+  <div class="sub-bar">
+    <div style="display:flex; gap:8px;">
+      <span class="legend-item"><span class="dot" style="background:#ffffff;"></span>종가</span>
+      <span class="legend-item"><span class="dot" style="background:#38bdf8;"></span>200선 <b id="ma200Val" style="color:#e2e8f0;">-</b></span>
+    </div>
+    <div>
+      <span id="diffFrom200" style="font-weight:700;">-</span>
+    </div>
+  </div>
+
+  <!-- 메인 캔버스 (X, Y축 내장) -->
+  <div class="chart-box">
     <canvas id="chart"></canvas>
   </div>
 
   <script>
     const SETTINGS = {
-      baseMA: 200,    // TQQQ 200일 이동평균선
-      graphDays: 100, // 차트 노출 영업일수
+      baseMA: 200,
+      graphDays: 90, // 4x2 위젯에 가장 균형 잡힌 90 영업일 노출
       colors: {
         tqqqClose: "#ffffff",
-        ma200: "#38bdf8"
+        ma200: "#38bdf8",
+        grid: "rgba(255, 255, 255, 0.06)",
+        axisText: "#64748b"
       }
     };
 
@@ -267,7 +190,6 @@
       return sum / period;
     }
 
-    // TQQQ 자체의 200일 이평선 계산
     function buildIndicators(rows) {
       const closes = rows.map(r => r.close);
       return rows.map((row, idx) => {
@@ -276,10 +198,8 @@
       });
     }
 
-    // TQQQ 200일선 기준 매매 시뮬레이션
     function simulateStrategy(tqqqRows) {
       let state = "미보유";
-      let entryDate = null;
       let entryPrice = null;
       let todaySignal = "관망";
 
@@ -297,7 +217,6 @@
           todaySignal = "매도";
         } else if (state === "미보유" && crossUp) {
           state = "보유";
-          entryDate = curr.date;
           entryPrice = curr.close;
           todaySignal = "매수";
         } else if (state === "보유") {
@@ -313,7 +232,7 @@
         strategyReturnPct = ((currPrice / entryPrice) - 1) * 100;
       }
 
-      return { state, entryDate, todaySignal, strategyReturnPct };
+      return { state, todaySignal, strategyReturnPct };
     }
 
     function drawSmoothLine(ctx, points, color, width, glow = false) {
@@ -326,8 +245,8 @@
       ctx.lineJoin = "round";
 
       if (glow) {
-        ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
-        ctx.shadowBlur = 12;
+        ctx.shadowColor = "rgba(255, 255, 255, 0.75)";
+        ctx.shadowBlur = 8;
       } else {
         ctx.shadowBlur = 0;
       }
@@ -363,37 +282,71 @@
 
       const w = rect.width;
       const h = rect.height;
-      const pad = { top: 14, right: 8, bottom: 12, left: 8 };
 
-      const seriesKeys = ["close", "ma200"];
+      // 축 라벨 공간 확보: 우측 36px (가격 Y축), 하단 14px (시간 X축)
+      const pad = { top: 8, right: 38, bottom: 15, left: 6 };
+
       const values = [];
-      rows.forEach(r => seriesKeys.forEach(k => {
-        if (r[k] != null) values.push(r[k]);
-      }));
+      rows.forEach(r => {
+        if (r.close != null) values.push(r.close);
+        if (r.ma200 != null) values.push(r.ma200);
+      });
 
       if (!values.length) return;
 
-      const minV = Math.min(...values);
-      const maxV = Math.max(...values);
+      const rawMin = Math.min(...values);
+      const rawMax = Math.max(...values);
+      const margin = (rawMax - rawMin) * 0.06;
+      const minV = rawMin - margin;
+      const maxV = rawMax + margin;
+
       const chartW = w - pad.left - pad.right;
       const chartH = h - pad.top - pad.bottom;
 
-      // 그리드 가이드라인
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-      ctx.setLineDash([3, 4]);
-      ctx.lineWidth = 1;
-      for (let i = 1; i <= 2; i++) {
-        const y = pad.top + (chartH / 3) * i;
+      // 1. Y축 점선 가이드라인 및 가격 표시 (3단계: 상단, 중간, 하단)
+      ctx.font = "9px -apple-system, sans-serif";
+      ctx.fillStyle = SETTINGS.colors.axisText;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+
+      const ySteps = [0, 0.5, 1];
+      ySteps.forEach(ratio => {
+        const y = pad.top + chartH * ratio;
+        const priceVal = maxV - (maxV - minV) * ratio;
+
+        ctx.strokeStyle = SETTINGS.colors.grid;
+        ctx.setLineDash([2, 3]);
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
         ctx.moveTo(pad.left, y);
         ctx.lineTo(pad.left + chartW, y);
         ctx.stroke();
-      }
+
+        ctx.fillText(`$${priceVal.toFixed(0)}`, pad.left + chartW + 5, y);
+      });
       ctx.setLineDash([]);
 
+      // 2. X축 시간/날짜 표시 (시작, 중간, 끝 3포인트)
+      ctx.textBaseline = "bottom";
+      const xIndices = [0, Math.floor((rows.length - 1) / 2), rows.length - 1];
+      xIndices.forEach((idx, i) => {
+        const r = rows[idx];
+        if (!r || !r.date) return;
+        const d = new Date(r.date);
+        const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+        const x = pad.left + (idx / (rows.length - 1)) * chartW;
+
+        if (i === 0) ctx.textAlign = "left";
+        else if (i === xIndices.length - 1) ctx.textAlign = "right";
+        else ctx.textAlign = "center";
+
+        ctx.fillText(dateStr, x, h - 1);
+      });
+
+      // 3. 200일선 & 종가 라인 렌더링
       const seriesConfig = [
-        { key: "ma200", color: SETTINGS.colors.ma200, width: 2.2, glow: false },
-        { key: "close", color: SETTINGS.colors.tqqqClose, width: 3.2, glow: true }
+        { key: "ma200", color: SETTINGS.colors.ma200, width: 2.0, glow: false },
+        { key: "close", color: SETTINGS.colors.tqqqClose, width: 2.6, glow: true }
       ];
 
       seriesConfig.forEach(s => {
@@ -407,18 +360,18 @@
           }
         });
 
-        // TQQQ 곡선 하단 부드러운 발광 볼륨
+        // 종가 곡선 하단 부드러운 발광 볼륨 채우기
         if (s.key === "close" && points.length > 1) {
-          const grad = ctx.createLinearGradient(0, pad.top, 0, h);
-          grad.addColorStop(0, "rgba(255, 255, 255, 0.16)");
+          const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
+          grad.addColorStop(0, "rgba(255, 255, 255, 0.12)");
           grad.addColorStop(1, "rgba(255, 255, 255, 0.0)");
           ctx.beginPath();
           ctx.moveTo(points[0].x, points[0].y);
           for (let i = 1; i < points.length; i++) {
             ctx.lineTo(points[i].x, points[i].y);
           }
-          ctx.lineTo(points[points.length - 1].x, h);
-          ctx.lineTo(points[0].x, h);
+          ctx.lineTo(points[points.length - 1].x, pad.top + chartH);
+          ctx.lineTo(points[0].x, pad.top + chartH);
           ctx.closePath();
           ctx.fillStyle = grad;
           ctx.fill();
@@ -444,45 +397,39 @@
         const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
         const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2];
 
-        // 시그널
+        // 1. 시그널 배지
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
-        signalEl.className = "signal-chip " + (strategy.todaySignal === "매수" || strategy.todaySignal === "보유" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
+        signalEl.className = "pill-signal " + (strategy.todaySignal === "매수" || strategy.todaySignal === "보유" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
-        // TQQQ 가격
+        // 2. 가격 및 변동
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
         const chgEl = document.getElementById("tqqqChange");
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
-        chgEl.className = "change-val " + (chg >= 0 ? "val-up" : "val-down");
+        chgEl.className = "price-chg " + (chg >= 0 ? "val-up" : "val-down");
 
-        // 상태 및 진입일
-        document.getElementById("strategyState").textContent = `상태 ${strategy.state}`;
-        document.getElementById("entryDate").textContent = `진입 ${strategy.entryDate ? strategy.entryDate.slice(5) : "-"}`;
-
-        // 전략 수익률
+        // 3. 상태 및 수익률
+        document.getElementById("strategyState").textContent = strategy.state;
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
-          returnEl.textContent = `수익 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(2)}%`;
-          returnEl.className = "pill pill-return " + (strategy.strategyReturnPct >= 0 ? "val-up" : "val-down");
+          returnEl.textContent = `수익 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(1)}%`;
+          returnEl.className = "pill " + (strategy.strategyReturnPct >= 0 ? "val-up" : "val-down");
         } else {
           returnEl.textContent = "수익 -";
         }
 
-        // TQQQ 200일선 수치 및 이격도
-        document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(2)}`;
-
+        // 4. 서브 바 수치
+        document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(1)}`;
         if (latestTQQQ.ma200 != null) {
           const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
           const diffEl = document.getElementById("diffFrom200");
-          diffEl.textContent = `TQQQ 200일선 대비 ${diffPct >= 0 ? "+" : ""}${diffPct.toFixed(2)}%`;
+          diffEl.textContent = `200선 대비 ${diffPct >= 0 ? "+" : ""}${diffPct.toFixed(1)}%`;
           diffEl.className = diffPct >= 0 ? "val-up" : "val-down";
         }
 
-        document.getElementById("updatedAt").textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        // TQQQ 기반 차트 렌더링
+        // 5. 차트 그리기
         drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
         loader.style.display = "none";
       } catch (err) {
