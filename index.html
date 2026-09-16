@@ -2,70 +2,128 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>QQQ / TQQQ 전략 위젯</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
       color: #f9fafb;
-      height: 100vh;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      padding: 12px 14px;
+      padding: 10px 12px;
+      gap: 6px;
       user-select: none;
     }
+
+    /* 1. 최상단 헤더 */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
-      font-weight: bold;
     }
-    .signal { font-size: 13px; font-weight: bold; }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f9fafb;
+      letter-spacing: -0.3px;
+    }
+    .updated-at {
+      font-size: 9px;
+      color: #6b7280;
+    }
+    .signal {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+    }
     .signal-up { color: #22c55e; }
     .signal-down { color: #ef4444; }
-    .signal-neutral { color: #d1d5db; }
+    .signal-neutral { color: #9ca3af; }
 
-    .top-row {
+    /* 2. 상단 통합 정보 패널 */
+    .info-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(11, 18, 32, 0.45);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+    .info-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin: 4px 0;
+      align-items: baseline;
     }
-    .price-box { display: flex; flex-direction: column; gap: 2px; }
-    .tqqq-price { font-size: 16px; font-weight: bold; }
-    .change { font-size: 11px; }
-    .qqq-price { font-size: 11px; color: #d1d5db; }
 
-    .status-box { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .state-text { font-size: 12px; color: #d1d5db; }
-    .sell-line { font-size: 11px; color: #d1d5db; }
-
-    .chart-container {
-      width: 100%;
-      height: 65px;
-      background: rgba(11, 18, 32, 0.55);
-      border-radius: 8px;
-      position: relative;
-    }
-    canvas { width: 100%; height: 100%; display: block; }
-
-    .bottom-row {
+    /* 가격 & 변동 */
+    .tqqq-box {
       display: flex;
-      justify-content: space-between;
+      align-items: baseline;
+      gap: 5px;
+    }
+    .tqqq-price {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+    .change {
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .qqq-box {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    /* 우측 정보 텍스트 */
+    .status-group {
       font-size: 11px;
       color: #d1d5db;
-      margin-top: 4px;
+      display: flex;
+      gap: 4px;
     }
-    .bottom-col { display: flex; flex-direction: column; gap: 2px; }
-    .bottom-right { align-items: flex-end; }
+    .sub-group {
+      font-size: 10px;
+      color: #9ca3af;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .return-text {
+      font-weight: 700;
+    }
+
     .price-up { color: #22c55e; }
     .price-down { color: #ef4444; }
-    .muted { color: #9ca3af; font-size: 9px; }
+
+    /* 3. 하단 꽉 찬 차트 */
+    .chart-container {
+      width: 100%;
+      flex: 1;
+      min-height: 48px;
+      background: rgba(11, 18, 32, 0.65);
+      border-radius: 6px;
+      position: relative;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
 
     #loading {
       position: absolute;
@@ -81,38 +139,49 @@
   </style>
 </head>
 <body onclick="init()">
-  <div id="loading">데이터 로딩 중...</div>
+  <div id="loading">데이터 동기화 중...</div>
 
+  <!-- 1. 헤더: 타이틀, 갱신시각, 시그널 배지 -->
   <div class="header">
-    <span>QQQ / TQQQ 전략</span>
+    <div class="header-left">
+      <span class="title">QQQ / TQQQ 전략</span>
+      <span class="updated-at" id="updatedAt">갱신 대기</span>
+    </div>
     <span id="todaySignal" class="signal">-</span>
   </div>
 
-  <div class="top-row">
-    <div class="price-box">
-      <span class="tqqq-price" id="tqqqPrice">TQQQ -</span>
-      <span class="change" id="tqqqChange">-</span>
-      <span class="qqq-price" id="qqqPrice">QQQ -</span>
+  <!-- 2. 상단 통합 정보 패널 (모든 수치를 상단으로 집중) -->
+  <div class="info-panel">
+    <!-- 1행: TQQQ 현재가 + 상태/매도선 -->
+    <div class="info-row">
+      <div class="tqqq-box">
+        <span class="tqqq-price" id="tqqqPrice">TQQQ -</span>
+        <span class="change" id="tqqqChange">-</span>
+      </div>
+      <div class="status-group">
+        <span id="strategyState">상태 -</span>
+        <span>•</span>
+        <span id="activeSellLine">매도선 -</span>
+      </div>
     </div>
-    <div class="status-box">
-      <span class="state-text" id="strategyState">상태 -</span>
-      <span class="sell-line" id="activeSellLine">매도선 -</span>
+
+    <!-- 2행: QQQ 종가 + 진입일/전략수익률 + 이평선 요약 -->
+    <div class="info-row">
+      <div class="qqq-box">
+        <span id="qqqPrice">QQQ -</span>
+      </div>
+      <div class="sub-group">
+        <span id="entryDate">진입일 -</span>
+        <span id="strategyReturn" class="return-text">전략 -</span>
+        <span>|</span>
+        <span id="maDetails">3일 - / 161일 -</span>
+      </div>
     </div>
   </div>
 
+  <!-- 3. 하단 차트 (위쪽 정보를 제외한 남은 공간을 차지) -->
   <div class="chart-container">
     <canvas id="chart"></canvas>
-  </div>
-
-  <div class="bottom-row">
-    <div class="bottom-col">
-      <span id="entryDate">진입일 -</span>
-      <span id="strategyReturn">전략 -</span>
-    </div>
-    <div class="bottom-col bottom-right">
-      <span id="maDetails" class="muted">-</span>
-      <span class="muted" id="updatedAt">갱신 대기</span>
-    </div>
   </div>
 
   <script>
@@ -249,11 +318,11 @@
       const pad = { top: 6, right: 4, bottom: 6, left: 4 };
 
       const series = [
-        { key: "close", color: SETTINGS.colors.qqqClose, width: 1.5 },
-        { key: "ma3", color: SETTINGS.colors.ma3, width: 1.2 },
-        { key: "ma161", color: SETTINGS.colors.ma161, width: 1.0 },
-        { key: "ma185", color: SETTINGS.colors.ma185, width: 1.0 },
-        { key: "envUpper", color: SETTINGS.colors.env185, width: 1.0 }
+        { key: "close", color: SETTINGS.colors.qqqClose, width: 1.4 },
+        { key: "ma3", color: SETTINGS.colors.ma3, width: 1.1 },
+        { key: "ma161", color: SETTINGS.colors.ma161, width: 0.9 },
+        { key: "ma185", color: SETTINGS.colors.ma185, width: 0.9 },
+        { key: "envUpper", color: SETTINGS.colors.env185, width: 0.9 }
       ];
 
       const values = [];
@@ -268,8 +337,9 @@
       const chartW = w - pad.left - pad.right;
       const chartH = h - pad.top - pad.bottom;
 
-      ctx.strokeStyle = "rgba(55, 65, 81, 0.45)";
-      ctx.lineWidth = 0.6;
+      // 그리드 가이드라인
+      ctx.strokeStyle = "rgba(55, 65, 81, 0.4)";
+      ctx.lineWidth = 0.5;
       for (let i = 0; i < 3; i++) {
         const y = pad.top + (chartH / 2) * i;
         ctx.beginPath();
@@ -278,6 +348,7 @@
         ctx.stroke();
       }
 
+      // 라인 차트
       series.forEach(s => {
         ctx.beginPath();
         ctx.strokeStyle = s.color;
@@ -303,12 +374,10 @@
     async function init() {
       const loader = document.getElementById("loading");
       loader.style.display = "flex";
-      loader.textContent = "데이터 로딩 중...";
 
       try {
-        // 내 저장소의 data.json을 직접 fetch (CORS 제한 없음)
         const res = await fetch(`./data.json?t=${Date.now()}`);
-        if (!res.ok) throw new Error("데이터 파일을 찾을 수 없습니다.");
+        if (!res.ok) throw new Error("파일 없음");
         const data = await res.json();
 
         const qqqData = data.qqq;
@@ -321,44 +390,50 @@
         const latestTQQQ = tqqqData[tqqqData.length - 1];
         const prevTQQQ = tqqqData[tqqqData.length - 2];
 
+        // 시그널
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
         signalEl.className = "signal " + (strategy.todaySignal === "매수" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
+        // TQQQ 가격
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
-        
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
         const chgEl = document.getElementById("tqqqChange");
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
         chgEl.className = "change " + (chg >= 0 ? "price-up" : "price-down");
 
-        document.getElementById("qqqPrice").textContent = `QQQ $${latestQQQ.close.toFixed(2)}`;
+        // 상태 / 매도선
         document.getElementById("strategyState").textContent = `상태 ${strategy.state}`;
         document.getElementById("activeSellLine").textContent = `매도선 ${strategy.activeSellLine}`;
 
-        document.getElementById("entryDate").textContent = `진입일 ${strategy.entryDate || "-"}`;
+        // QQQ 종가
+        document.getElementById("qqqPrice").textContent = `QQQ $${latestQQQ.close.toFixed(2)}`;
 
+        // 진입일 & 수익률
+        document.getElementById("entryDate").textContent = `진입 ${strategy.entryDate || "-"}`;
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
           returnEl.textContent = `전략 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(2)}%`;
-          returnEl.className = strategy.strategyReturnPct >= 0 ? "price-up" : "price-down";
+          returnEl.className = "return-text " + (strategy.strategyReturnPct >= 0 ? "price-up" : "price-down");
         } else {
           returnEl.textContent = "전략 -";
         }
 
+        // 이평선 & 갱신시각
         document.getElementById("maDetails").textContent = `3일 $${latestQQQ.ma3?.toFixed(1)} / 161일 $${latestQQQ.ma161?.toFixed(1)}`;
         document.getElementById("updatedAt").textContent = `${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 갱신`;
 
+        // 하단 차트 렌더링
         drawChart(qqqWithMA.slice(-SETTINGS.graphDays));
         loader.style.display = "none";
       } catch (err) {
-        loader.textContent = "데이터 갱신 실패 (터치 시 재시도)";
-        console.error(err);
+        loader.textContent = "갱신 실패 (터치 재시도)";
       }
     }
 
     window.onload = init;
+    window.onresize = () => init();
   </script>
 </body>
 </html>
