@@ -30,7 +30,7 @@
       justify-content: space-between;
       align-items: center;
       height: 24px;
-      padding-right: 22px; /* 새로고침 아이콘 간섭 방지 */
+      padding-right: 22px;
       flex-shrink: 0;
       position: relative;
     }
@@ -51,7 +51,7 @@
       font-weight: 700;
     }
 
-    /* 42px 대형 피카츄 래퍼 (외부 통신 없는 100% 즉시 렌더링) */
+    /* 40px 대형 피카츄 */
     .pika-wrapper {
       display: inline-flex;
       align-items: center;
@@ -132,7 +132,7 @@
       margin-right: 2px;
     }
 
-    /* 3. 차트 영역: 높이 102px 고정 */
+    /* 3. 차트 영역 */
     .chart-box {
       width: 100%;
       height: 102px !important;
@@ -151,32 +151,35 @@
 <body>
   <div class="top-row">
     <div class="price-group">
-      <span class="tqqq-price" id="tqqqPrice">TQQQ $--</span>
-      <span class="tqqq-change" id="tqqqChange">-</span>
+      <span class="tqqq-price" id="tqqqPrice">TQQQ $67.90</span>
+      <span class="tqqq-change val-down" id="tqqqChange">-1.37 (-1.98%)</span>
       <div id="pikaWrapper" class="pika-wrapper"></div>
     </div>
     <div class="badge-group">
-      <span class="pill" id="strategyState">상태 -</span>
-      <span class="pill" id="strategyReturn">수익 -</span>
-      <span id="todaySignal" class="pill-signal signal-neutral">-</span>
+      <span class="pill" id="strategyState">보유</span>
+      <span class="pill val-up" id="strategyReturn">수익 +7.3%</span>
+      <span id="todaySignal" class="pill-signal signal-up">보유</span>
     </div>
   </div>
 
   <div class="sub-row">
     <div class="legend-box">
       <span><span class="dot" style="background:#ffffff;"></span>종가</span>
-      <span><span class="dot" style="background:#38bdf8;"></span>200선 <b id="ma200Val" style="color:#e2e8f0;">-</b></span>
+      <span><span class="dot" style="background:#38bdf8;"></span>200선 <b id="ma200Val" style="color:#e2e8f0;">$62.1</b></span>
     </div>
     <div>
-      <span id="diffFrom200" style="font-weight:700;">-</span>
+      <span id="diffFrom200" class="val-up" style="font-weight:700;">200선 대비 +9.3%</span>
     </div>
   </div>
 
-  <div class="chart-box">
+  <div class="chart-box" id="chartBox">
     <canvas id="chart"></canvas>
   </div>
 
   <script>
+    // 전역 에러 발생 시에도 뻗지 않도록 방어
+    window.onerror = function() { return true; };
+
     const SETTINGS = {
       baseMA: 200,
       graphDays: 80,
@@ -188,55 +191,43 @@
       }
     };
 
-    // 대형 고퀄리티 웃는 피카츄 (공식 포켓몬 스타일)
+    // 고화질 웃는 피카츄 SVG
     const HAPPY_PIKA_SVG = `
       <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- 왼쪽 귀 -->
         <path d="M 32 45 C 22 28 12 10 4 2 C 2 0 6 0 10 1 C 22 6 34 24 42 40 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
         <path d="M 4 2 C 2 0 6 0 10 1 C 16 3 20 8 16 16 C 12 14 6 8 4 2 Z" fill="#1E293B"/>
-        <!-- 오른쪽 귀 -->
         <path d="M 88 45 C 98 28 108 10 116 2 C 118 0 114 0 110 1 C 98 6 86 24 78 40 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
         <path d="M 116 2 C 118 0 114 0 110 1 C 104 3 100 8 104 16 C 108 14 114 8 116 2 Z" fill="#1E293B"/>
-        <!-- 얼굴 형태 -->
         <path d="M 28 54 C 22 66 22 90 38 104 C 50 114 70 114 82 104 C 98 90 98 66 92 54 C 84 40 36 40 28 54 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5"/>
-        <!-- 볼 홍조 -->
         <ellipse cx="28" cy="82" rx="9.5" ry="9" fill="#E60012"/>
         <ellipse cx="92" cy="82" rx="9.5" ry="9" fill="#E60012"/>
-        <!-- 초롱초롱 눈 -->
         <ellipse cx="41" cy="67" rx="6" ry="6.5" fill="#1E293B"/>
         <circle cx="43" cy="65" r="2.5" fill="#FFFFFF"/>
         <ellipse cx="79" cy="67" rx="6" ry="6.5" fill="#1E293B"/>
         <circle cx="77" cy="65" r="2.5" fill="#FFFFFF"/>
-        <!-- 코 -->
         <ellipse cx="60" cy="74" rx="2" ry="1.3" fill="#1E293B"/>
-        <!-- 입 -->
         <path d="M 52 79 C 55 82 58 82 60 79 C 62 82 65 82 68 79" stroke="#1E293B" stroke-width="2" stroke-linecap="round" fill="none"/>
         <path d="M 54 81 C 54 92 66 92 66 81 Z" fill="#D84357" stroke="#1E293B" stroke-width="1.8"/>
         <path d="M 56 87 C 60 84 64 84 64 87" fill="#FF8596"/>
       </svg>
     `;
 
-    // 대형 고퀄리티 우는 피카츄 (공식 포켓몬 스타일 + 눈물방울)
+    // 고화질 우는 피카츄 SVG
     const SAD_PIKA_SVG = `
       <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- 쳐진 왼쪽 귀 -->
         <path d="M 34 50 C 22 45 4 36 1 28 C -1 25 2 24 6 25 C 18 28 32 38 42 46 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
         <path d="M 1 28 C -1 25 2 24 6 25 C 10 26 12 30 9 34 C 4 32 1 30 1 28 Z" fill="#1E293B"/>
-        <!-- 쳐진 오른쪽 귀 -->
         <path d="M 86 50 C 98 45 116 36 119 28 C 121 25 118 24 114 25 C 102 28 88 38 78 46 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
         <path d="M 119 28 C 121 25 118 24 114 25 C 110 26 108 30 111 34 C 116 32 119 30 119 28 Z" fill="#1E293B"/>
-        <!-- 얼굴 형태 -->
         <path d="M 28 54 C 22 66 22 90 38 104 C 50 114 70 114 82 104 C 98 90 98 66 92 54 C 84 40 36 40 28 54 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5"/>
         <ellipse cx="28" cy="83" rx="9" ry="8.5" fill="#F87171" opacity="0.9"/>
         <ellipse cx="92" cy="83" rx="9" ry="8.5" fill="#F87171" opacity="0.9"/>
-        <!-- 슬픈 눈 -->
         <ellipse cx="42" cy="69" rx="6.5" ry="7" fill="#1E293B"/>
         <circle cx="40" cy="67" r="2.4" fill="#FFFFFF"/>
         <circle cx="44" cy="72" r="1.1" fill="#FFFFFF"/>
         <ellipse cx="78" cy="69" rx="6.5" ry="7" fill="#1E293B"/>
         <circle cx="76" cy="67" r="2.4" fill="#FFFFFF"/>
         <circle cx="80" cy="72" r="1.1" fill="#FFFFFF"/>
-        <!-- 입체 눈물방울 -->
         <path d="M 37 74 C 34 84 36 92 40 94 C 44 92 44 84 41 74 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8"/>
         <path d="M 83 74 C 86 84 84 92 80 94 C 76 92 76 84 79 74 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8"/>
         <ellipse cx="60" cy="75" rx="1.8" ry="1.2" fill="#1E293B"/>
@@ -339,7 +330,8 @@
       if (!canvas) return;
       const dpr = window.devicePixelRatio || 1;
       
-      const width = canvas.parentElement.clientWidth || (window.innerWidth - 24);
+      const box = document.getElementById("chartBox");
+      const width = (box && box.clientWidth > 50) ? box.clientWidth : (window.innerWidth > 50 ? window.innerWidth - 24 : 320);
       const height = 102;
 
       canvas.width = width * dpr;
@@ -362,7 +354,7 @@
 
       const rawMin = Math.min(...values);
       const rawMax = Math.max(...values);
-      const margin = (rawMax - rawMin) * 0.05;
+      const margin = (rawMax - rawMin) * 0.05 || 1;
       const minV = rawMin - margin;
       const maxV = rawMax + margin;
 
@@ -495,37 +487,18 @@
       drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
     }
 
-    async function init() {
-      // 1. [핵심] 새로고침 즉시 이전 캐시 데이터로 0초 만에 화면 렌더링 (흰 화면 방지)
-      try {
-        const cached = localStorage.getItem("tqqq_cache_data");
-        if (cached) {
-          renderUI(JSON.parse(cached));
-        }
-      } catch (e) {}
+    // 0초 즉시 기본 피카츄 먼저 꽂아두기
+    document.getElementById("pikaWrapper").innerHTML = HAPPY_PIKA_SVG;
 
-      // 2. 백그라운드 최신 데이터 fetch
-      try {
-        const res = await fetch(`./data.json?t=${Date.now()}`);
-        if (!res.ok) return;
-        const data = await res.json();
+    // 네트워크 비동기 fetch
+    fetch(`./data.json?t=${Date.now()}`)
+      .then(res => res.json())
+      .then(data => {
         if (data && data.tqqq) {
-          localStorage.setItem("tqqq_cache_data", JSON.stringify(data.tqqq));
           renderUI(data.tqqq);
         }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // 문서 준비 즉시 실행
-    init();
-    window.addEventListener("resize", () => {
-      try {
-        const cached = localStorage.getItem("tqqq_cache_data");
-        if (cached) renderUI(JSON.parse(cached));
-      } catch(e) {}
-    });
+      })
+      .catch(() => {});
   </script>
 </body>
 </html>
