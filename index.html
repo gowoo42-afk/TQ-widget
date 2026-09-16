@@ -29,8 +29,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 22px;
-      padding-right: 22px;
+      height: 24px;
+      padding-right: 22px; /* 새로고침 아이콘 간섭 방지 */
       flex-shrink: 0;
       position: relative;
     }
@@ -51,42 +51,24 @@
       font-weight: 700;
     }
 
-    /* 공식 피카츄 캐릭터 (42px) */
+    /* 42px 대형 피카츄 래퍼 (외부 통신 없는 100% 즉시 렌더링) */
     .pika-wrapper {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       margin-left: 2px;
       margin-top: -6px;
       position: relative;
       flex-shrink: 0;
+      filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
     }
-    .pika-img {
+    .pika-wrapper svg {
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
-      transition: filter 0.3s ease;
+      display: block;
     }
-
-    /* 매도 / 관망 시 슬픈 피카츄 효과 */
-    .pika-sad .pika-img {
-      filter: grayscale(45%) brightness(0.85) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    }
-    .tear {
-      position: absolute;
-      width: 6px;
-      height: 10px;
-      background: #38bdf8;
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-      box-shadow: 0 0 6px #38bdf8;
-      display: none;
-    }
-    .tear-left { top: 15px; left: 10px; }
-    .tear-right { top: 15px; right: 12px; }
-    .pika-sad .tear { display: block; }
 
     .badge-group {
       display: flex;
@@ -150,7 +132,7 @@
       margin-right: 2px;
     }
 
-    /* 3. 차트 영역 */
+    /* 3. 차트 영역: 높이 102px 고정 */
     .chart-box {
       width: 100%;
       height: 102px !important;
@@ -166,18 +148,12 @@
     }
   </style>
 </head>
-<body onclick="init()">
-  <!-- 화면 가림 원인이었던 full-screen loading 제거 -->
-
+<body>
   <div class="top-row">
     <div class="price-group">
       <span class="tqqq-price" id="tqqqPrice">TQQQ $--</span>
       <span class="tqqq-change" id="tqqqChange">-</span>
-      <div id="pikaWrapper" class="pika-wrapper">
-        <img id="pikaImg" class="pika-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" />
-        <div class="tear tear-left"></div>
-        <div class="tear tear-right"></div>
-      </div>
+      <div id="pikaWrapper" class="pika-wrapper"></div>
     </div>
     <div class="badge-group">
       <span class="pill" id="strategyState">상태 -</span>
@@ -211,6 +187,62 @@
         axisText: "#64748b"
       }
     };
+
+    // 대형 고퀄리티 웃는 피카츄 (공식 포켓몬 스타일)
+    const HAPPY_PIKA_SVG = `
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- 왼쪽 귀 -->
+        <path d="M 32 45 C 22 28 12 10 4 2 C 2 0 6 0 10 1 C 22 6 34 24 42 40 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M 4 2 C 2 0 6 0 10 1 C 16 3 20 8 16 16 C 12 14 6 8 4 2 Z" fill="#1E293B"/>
+        <!-- 오른쪽 귀 -->
+        <path d="M 88 45 C 98 28 108 10 116 2 C 118 0 114 0 110 1 C 98 6 86 24 78 40 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M 116 2 C 118 0 114 0 110 1 C 104 3 100 8 104 16 C 108 14 114 8 116 2 Z" fill="#1E293B"/>
+        <!-- 얼굴 형태 -->
+        <path d="M 28 54 C 22 66 22 90 38 104 C 50 114 70 114 82 104 C 98 90 98 66 92 54 C 84 40 36 40 28 54 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5"/>
+        <!-- 볼 홍조 -->
+        <ellipse cx="28" cy="82" rx="9.5" ry="9" fill="#E60012"/>
+        <ellipse cx="92" cy="82" rx="9.5" ry="9" fill="#E60012"/>
+        <!-- 초롱초롱 눈 -->
+        <ellipse cx="41" cy="67" rx="6" ry="6.5" fill="#1E293B"/>
+        <circle cx="43" cy="65" r="2.5" fill="#FFFFFF"/>
+        <ellipse cx="79" cy="67" rx="6" ry="6.5" fill="#1E293B"/>
+        <circle cx="77" cy="65" r="2.5" fill="#FFFFFF"/>
+        <!-- 코 -->
+        <ellipse cx="60" cy="74" rx="2" ry="1.3" fill="#1E293B"/>
+        <!-- 입 -->
+        <path d="M 52 79 C 55 82 58 82 60 79 C 62 82 65 82 68 79" stroke="#1E293B" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M 54 81 C 54 92 66 92 66 81 Z" fill="#D84357" stroke="#1E293B" stroke-width="1.8"/>
+        <path d="M 56 87 C 60 84 64 84 64 87" fill="#FF8596"/>
+      </svg>
+    `;
+
+    // 대형 고퀄리티 우는 피카츄 (공식 포켓몬 스타일 + 눈물방울)
+    const SAD_PIKA_SVG = `
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- 쳐진 왼쪽 귀 -->
+        <path d="M 34 50 C 22 45 4 36 1 28 C -1 25 2 24 6 25 C 18 28 32 38 42 46 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M 1 28 C -1 25 2 24 6 25 C 10 26 12 30 9 34 C 4 32 1 30 1 28 Z" fill="#1E293B"/>
+        <!-- 쳐진 오른쪽 귀 -->
+        <path d="M 86 50 C 98 45 116 36 119 28 C 121 25 118 24 114 25 C 102 28 88 38 78 46 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M 119 28 C 121 25 118 24 114 25 C 110 26 108 30 111 34 C 116 32 119 30 119 28 Z" fill="#1E293B"/>
+        <!-- 얼굴 형태 -->
+        <path d="M 28 54 C 22 66 22 90 38 104 C 50 114 70 114 82 104 C 98 90 98 66 92 54 C 84 40 36 40 28 54 Z" fill="#FED000" stroke="#1E293B" stroke-width="2.5"/>
+        <ellipse cx="28" cy="83" rx="9" ry="8.5" fill="#F87171" opacity="0.9"/>
+        <ellipse cx="92" cy="83" rx="9" ry="8.5" fill="#F87171" opacity="0.9"/>
+        <!-- 슬픈 눈 -->
+        <ellipse cx="42" cy="69" rx="6.5" ry="7" fill="#1E293B"/>
+        <circle cx="40" cy="67" r="2.4" fill="#FFFFFF"/>
+        <circle cx="44" cy="72" r="1.1" fill="#FFFFFF"/>
+        <ellipse cx="78" cy="69" rx="6.5" ry="7" fill="#1E293B"/>
+        <circle cx="76" cy="67" r="2.4" fill="#FFFFFF"/>
+        <circle cx="80" cy="72" r="1.1" fill="#FFFFFF"/>
+        <!-- 입체 눈물방울 -->
+        <path d="M 37 74 C 34 84 36 92 40 94 C 44 92 44 84 41 74 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8"/>
+        <path d="M 83 74 C 86 84 84 92 80 94 C 76 92 76 84 79 74 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8"/>
+        <ellipse cx="60" cy="75" rx="1.8" ry="1.2" fill="#1E293B"/>
+        <path d="M 54 85 C 58 81 62 81 66 85" stroke="#1E293B" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      </svg>
+    `;
 
     function sma(values, endIdx, period) {
       if (endIdx - period + 1 < 0) return null;
@@ -414,73 +446,86 @@
       });
     }
 
+    function renderUI(tqqqData) {
+      if (!tqqqData || !tqqqData.length) return;
+
+      const tqqqWithMA = buildIndicators(tqqqData);
+      const strategy = simulateStrategy(tqqqWithMA);
+
+      const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
+      const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2] || latestTQQQ;
+
+      // 시그널 배지
+      const signalEl = document.getElementById("todaySignal");
+      signalEl.textContent = strategy.todaySignal;
+      const isBullish = strategy.todaySignal === "매수" || strategy.todaySignal === "보유";
+      signalEl.className = "pill-signal " + (isBullish ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
+
+      // 피카츄 SVG 즉각 렌더링
+      const pikaWrapper = document.getElementById("pikaWrapper");
+      pikaWrapper.innerHTML = isBullish ? HAPPY_PIKA_SVG : SAD_PIKA_SVG;
+
+      // 가격
+      document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
+      const chg = latestTQQQ.close - prevTQQQ.close;
+      const chgPct = (chg / prevTQQQ.close) * 100;
+      const chgEl = document.getElementById("tqqqChange");
+      chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
+      chgEl.className = "tqqq-change " + (chg >= 0 ? "val-up" : "val-down");
+
+      // 전략 상태 & 수익률
+      document.getElementById("strategyState").textContent = strategy.state;
+      const returnEl = document.getElementById("strategyReturn");
+      if (strategy.strategyReturnPct != null) {
+        returnEl.textContent = `수익 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(1)}%`;
+        returnEl.className = "pill " + (strategy.strategyReturnPct >= 0 ? "val-up" : "val-down");
+      } else {
+        returnEl.textContent = "수익 -";
+      }
+
+      // 200일선
+      document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(1)}`;
+      if (latestTQQQ.ma200 != null) {
+        const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
+        const diffEl = document.getElementById("diffFrom200");
+        diffEl.textContent = `200선 대비 ${diffPct >= 0 ? "+" : ""}${diffPct.toFixed(1)}%`;
+        diffEl.className = diffPct >= 0 ? "val-up" : "val-down";
+      }
+
+      drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
+    }
+
     async function init() {
+      // 1. [핵심] 새로고침 즉시 이전 캐시 데이터로 0초 만에 화면 렌더링 (흰 화면 방지)
+      try {
+        const cached = localStorage.getItem("tqqq_cache_data");
+        if (cached) {
+          renderUI(JSON.parse(cached));
+        }
+      } catch (e) {}
+
+      // 2. 백그라운드 최신 데이터 fetch
       try {
         const res = await fetch(`./data.json?t=${Date.now()}`);
         if (!res.ok) return;
         const data = await res.json();
-
-        const tqqqData = data.tqqq;
-        const tqqqWithMA = buildIndicators(tqqqData);
-        const strategy = simulateStrategy(tqqqWithMA);
-
-        const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
-        const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2];
-
-        // 1. 시그널 배지
-        const signalEl = document.getElementById("todaySignal");
-        signalEl.textContent = strategy.todaySignal;
-        const isBullish = strategy.todaySignal === "매수" || strategy.todaySignal === "보유";
-        signalEl.className = "pill-signal " + (isBullish ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
-
-        // 2. 피카츄 상태
-        const pikaWrapper = document.getElementById("pikaWrapper");
-        if (isBullish) {
-          pikaWrapper.className = "pika-wrapper";
-        } else {
-          pikaWrapper.className = "pika-wrapper pika-sad";
+        if (data && data.tqqq) {
+          localStorage.setItem("tqqq_cache_data", JSON.stringify(data.tqqq));
+          renderUI(data.tqqq);
         }
-
-        // 3. 가격
-        document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
-        const chg = latestTQQQ.close - prevTQQQ.close;
-        const chgPct = (chg / prevTQQQ.close) * 100;
-        const chgEl = document.getElementById("tqqqChange");
-        chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
-        chgEl.className = "tqqq-change " + (chg >= 0 ? "val-up" : "val-down");
-
-        // 4. 상태 & 수익률
-        document.getElementById("strategyState").textContent = strategy.state;
-        const returnEl = document.getElementById("strategyReturn");
-        if (strategy.strategyReturnPct != null) {
-          returnEl.textContent = `수익 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(1)}%`;
-          returnEl.className = "pill " + (strategy.strategyReturnPct >= 0 ? "val-up" : "val-down");
-        } else {
-          returnEl.textContent = "수익 -";
-        }
-
-        // 5. 200일선
-        document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(1)}`;
-        if (latestTQQQ.ma200 != null) {
-          const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
-          const diffEl = document.getElementById("diffFrom200");
-          diffEl.textContent = `200선 대비 ${diffPct >= 0 ? "+" : ""}${diffPct.toFixed(1)}%`;
-          diffEl.className = diffPct >= 0 ? "val-up" : "val-down";
-        }
-
-        drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
       } catch (err) {
         console.error(err);
       }
     }
 
-    // 문서 로드 완료 즉시 실행
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init);
-    } else {
-      init();
-    }
-    window.onresize = () => init();
+    // 문서 준비 즉시 실행
+    init();
+    window.addEventListener("resize", () => {
+      try {
+        const cached = localStorage.getItem("tqqq_cache_data");
+        if (cached) renderUI(JSON.parse(cached));
+      } catch(e) {}
+    });
   </script>
 </body>
 </html>
