@@ -6,21 +6,23 @@
   <title>TQQQ 200일선 전략 위젯</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
+    html {
       width: 100%;
       height: 100%;
-      overflow: hidden;
+      background-color: #0f172a;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Segoe UI", Roboto, Helvetica, sans-serif;
-      background: #0f172a;
+      background-color: #0f172a;
       color: #f8fafc;
+      width: 100%;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      /* 가장자리 잘림 방지 안전 여백 */
       padding: 8px 12px 6px 12px;
       gap: 3px;
       user-select: none;
+      overflow: hidden;
     }
 
     /* 1. 최상단 가격 & 핵심 상태 */
@@ -29,8 +31,8 @@
       justify-content: space-between;
       align-items: center;
       height: 22px;
-      /* 우측 상단 앱 새로고침 아이콘(↻) 겹침 방지 */
-      padding-right: 24px;
+      padding-right: 24px; /* 앱 새로고침 아이콘 간섭 방지 */
+      flex-shrink: 0;
     }
     .price-group {
       display: flex;
@@ -95,6 +97,7 @@
       color: #94a3b8;
       height: 13px;
       padding: 0 1px;
+      flex-shrink: 0;
     }
     .legend-box {
       display: flex;
@@ -109,10 +112,11 @@
       margin-right: 2px;
     }
 
-    /* 3. 차트 영역 */
+    /* 3. 차트 영역: flex-grow와 최소 높이 보장 */
     .chart-box {
       width: 100%;
-      flex: 1;
+      flex: 1 1 auto;
+      min-height: 100px;
       position: relative;
     }
     canvas {
@@ -124,7 +128,7 @@
     #loading {
       position: absolute;
       inset: 0;
-      background: #0f172a;
+      background-color: #0f172a;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -137,7 +141,6 @@
 <body onclick="init()">
   <div id="loading">동기화 중...</div>
 
-  <!-- 상단 요약 바 -->
   <div class="top-row">
     <div class="price-group">
       <span class="tqqq-price" id="tqqqPrice">TQQQ $--</span>
@@ -150,7 +153,6 @@
     </div>
   </div>
 
-  <!-- 보조 범례 바 -->
   <div class="sub-row">
     <div class="legend-box">
       <span><span class="dot" style="background:#ffffff;"></span>종가</span>
@@ -161,7 +163,6 @@
     </div>
   </div>
 
-  <!-- 메인 캔버스 -->
   <div class="chart-box">
     <canvas id="chart"></canvas>
   </div>
@@ -273,15 +274,17 @@
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.parentElement.getBoundingClientRect();
       
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      const width = rect.width || window.innerWidth - 24;
+      const height = rect.height || 100;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
       const ctx = canvas.getContext("2d");
       ctx.scale(dpr, dpr);
 
-      const w = rect.width;
-      const h = rect.height;
+      const w = width;
+      const h = height;
 
-      // 하단 날짜 잘림 방지 (bottom: 14px)
       const pad = { top: 4, right: 28, bottom: 14, left: 4 };
 
       const values = [];
@@ -301,7 +304,7 @@
       const chartW = w - pad.left - pad.right;
       const chartH = h - pad.top - pad.bottom;
 
-      // 1. Y축 가이드선 및 가격
+      // 1. Y축
       ctx.font = "8px -apple-system, sans-serif";
       ctx.fillStyle = SETTINGS.colors.axisText;
       ctx.textAlign = "left";
@@ -324,7 +327,7 @@
       });
       ctx.setLineDash([]);
 
-      // 2. X축 날짜
+      // 2. X축
       ctx.textBaseline = "bottom";
       const xIndices = [0, Math.floor((rows.length - 1) / 2), rows.length - 1];
       xIndices.forEach((idx, i) => {
@@ -341,7 +344,7 @@
         ctx.fillText(dateStr, x, h);
       });
 
-      // 3. 곡선 렌더링
+      // 3. 곡선
       const seriesConfig = [
         { key: "ma200", color: SETTINGS.colors.ma200, width: 1.8, glow: false },
         { key: "close", color: SETTINGS.colors.tqqqClose, width: 2.4, glow: true }
@@ -380,7 +383,7 @@
 
     async function init() {
       const loader = document.getElementById("loading");
-      loader.style.display = "flex";
+      if (loader) loader.style.display = "flex";
 
       try {
         const res = await fetch(`./data.json?t=${Date.now()}`);
@@ -394,12 +397,10 @@
         const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
         const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2];
 
-        // 1. 시그널
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
         signalEl.className = "pill-signal " + (strategy.todaySignal === "매수" || strategy.todaySignal === "보유" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
-        // 2. 가격
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
@@ -407,7 +408,6 @@
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
         chgEl.className = "tqqq-change " + (chg >= 0 ? "val-up" : "val-down");
 
-        // 3. 상태 & 수익률
         document.getElementById("strategyState").textContent = strategy.state;
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
@@ -417,7 +417,6 @@
           returnEl.textContent = "수익 -";
         }
 
-        // 4. 서브 바
         document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(1)}`;
         if (latestTQQQ.ma200 != null) {
           const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
@@ -426,11 +425,10 @@
           diffEl.className = diffPct >= 0 ? "val-up" : "val-down";
         }
 
-        // 5. 차트 렌더링
         drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
-        loader.style.display = "none";
+        if (loader) loader.style.display = "none";
       } catch (err) {
-        loader.textContent = "터치하여 갱신";
+        if (loader) loader.textContent = "터치하여 갱신";
       }
     }
 
