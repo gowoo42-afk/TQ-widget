@@ -132,48 +132,48 @@
       }
     };
 
-    async function fetchYahooHistory(symbol) {
-      const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=3y&interval=1d&includePrePost=false`;
+    // Stooq 일봉 데이터 파싱 (CORS 차단 없는 안전한 통신)
+    async function fetchStooqDaily(symbol) {
+      const ticker = symbol.toLowerCase() + ".us";
+      const targetUrl = `https://stooq.com/q/d/l/?s=${ticker}&i=d`;
       
+      // JSDelivr/AllOrigins 다중 우회
       const proxies = [
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
-        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+        `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
         `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
       ];
 
-      for (const proxy of proxies) {
+      let csvText = "";
+      for (const p of proxies) {
         try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 7000);
-          
-          const res = await fetch(proxy, { signal: controller.signal });
-          clearTimeout(timeoutId);
-
-          if (!res.ok) continue;
-          
-          const json = await res.json();
-          const result = json?.chart?.result?.[0];
-          if (!result) continue;
-
-          const timestamps = result.timestamp || [];
-          const quote = result.indicators?.quote?.[0] || {};
-          const closes = quote.close || [];
-
-          const rows = [];
-          for (let i = 0; i < timestamps.length; i++) {
-            if (closes[i] != null) {
-              rows.push({
-                date: new Date(timestamps[i] * 1000),
-                close: closes[i]
-              });
-            }
+          const res = await fetch(p);
+          if (res.ok) {
+            csvText = await res.text();
+            if (csvText.includes("Date,Open,High,Low,Close")) break;
           }
-          if (rows.length > 0) return rows;
-        } catch (e) {
-          console.warn(`Proxy failed: ${proxy}`);
+        } catch(e) {}
+      }
+
+      if (!csvText || !csvText.includes("Date")) {
+        throw new Error("데이터 연결 실패");
+      }
+
+      const lines = csvText.trim().split("\n");
+      const rows = [];
+      // 헤더 제외하고 오래된 순으로 정렬되어야 하므로 reverse
+      for (let i = lines.length - 1; i >= 1; i--) {
+        const parts = lines[i].split(",");
+        if (parts.length >= 5) {
+          const close = parseFloat(parts[4]);
+          if (!isNaN(close)) {
+            rows.push({
+              date: new Date(parts[0]),
+              close: close
+            });
+          }
         }
       }
-      throw new Error(`${symbol} 데이터를 가져오지 못했습니다.`);
+      return rows;
     }
 
     function sma(values, endIdx, period) {
@@ -351,8 +351,8 @@
 
       try {
         const [qqqData, tqqqData] = await Promise.all([
-          fetchYahooHistory("QQQ"),
-          fetchYahooHistory("TQQQ")
+          fetchStooqDaily("QQQ"),
+          fetchStooqDaily("TQQQ")
         ]);
 
         const qqqWithMA = buildIndicators(qqqData);
