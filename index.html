@@ -134,27 +134,46 @@
 
     async function fetchYahooHistory(symbol) {
       const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=3y&interval=1d&includePrePost=false`;
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
       
-      const res = await fetch(proxyUrl);
-      const json = await res.json();
-      const result = json?.chart?.result?.[0];
-      if (!result) return [];
+      const proxies = [
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
+        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+      ];
 
-      const timestamps = result.timestamp || [];
-      const quote = result.indicators?.quote?.[0] || {};
-      const closes = quote.close || [];
+      for (const proxy of proxies) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 7000);
+          
+          const res = await fetch(proxy, { signal: controller.signal });
+          clearTimeout(timeoutId);
 
-      const rows = [];
-      for (let i = 0; i < timestamps.length; i++) {
-        if (closes[i] != null) {
-          rows.push({
-            date: new Date(timestamps[i] * 1000),
-            close: closes[i]
-          });
+          if (!res.ok) continue;
+          
+          const json = await res.json();
+          const result = json?.chart?.result?.[0];
+          if (!result) continue;
+
+          const timestamps = result.timestamp || [];
+          const quote = result.indicators?.quote?.[0] || {};
+          const closes = quote.close || [];
+
+          const rows = [];
+          for (let i = 0; i < timestamps.length; i++) {
+            if (closes[i] != null) {
+              rows.push({
+                date: new Date(timestamps[i] * 1000),
+                close: closes[i]
+              });
+            }
+          }
+          if (rows.length > 0) return rows;
+        } catch (e) {
+          console.warn(`Proxy failed: ${proxy}`);
         }
       }
-      return rows;
+      throw new Error(`${symbol} 데이터를 가져오지 못했습니다.`);
     }
 
     function sma(values, endIdx, period) {
@@ -293,7 +312,6 @@
       const chartW = w - pad.left - pad.right;
       const chartH = h - pad.top - pad.bottom;
 
-      // 그리드 라인
       ctx.strokeStyle = "rgba(55, 65, 81, 0.45)";
       ctx.lineWidth = 0.6;
       for (let i = 0; i < 3; i++) {
@@ -304,7 +322,6 @@
         ctx.stroke();
       }
 
-      // 지표 라인 렌더링
       series.forEach(s => {
         ctx.beginPath();
         ctx.strokeStyle = s.color;
@@ -328,7 +345,10 @@
     }
 
     async function init() {
-      document.getElementById("loading").style.display = "flex";
+      const loader = document.getElementById("loading");
+      loader.style.display = "flex";
+      loader.textContent = "데이터 로딩 중...";
+
       try {
         const [qqqData, tqqqData] = await Promise.all([
           fetchYahooHistory("QQQ"),
@@ -342,7 +362,6 @@
         const latestTQQQ = tqqqData[tqqqData.length - 1];
         const prevTQQQ = tqqqData[tqqqData.length - 2];
 
-        // 텍스트 바인딩
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
         signalEl.className = "signal " + (strategy.todaySignal === "매수" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
@@ -373,14 +392,12 @@
         document.getElementById("maDetails").textContent = `3일 $${latestQQQ.ma3?.toFixed(1)} / 161일 $${latestQQQ.ma161?.toFixed(1)}`;
         document.getElementById("updatedAt").textContent = `${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 갱신`;
 
-        // 최근 N일 차트 그리기
         drawChart(qqqWithMA.slice(-SETTINGS.graphDays));
       } catch (err) {
-        console.error(err);
-        alert("데이터 갱신 중 오류가 발생했습니다: " + err.message);
-      } finally {
-        document.getElementById("loading").style.display = "none";
+        loader.textContent = "갱신 실패 (화면 터치 시 재시도)";
+        return;
       }
+      loader.style.display = "none";
     }
 
     window.onload = init;
