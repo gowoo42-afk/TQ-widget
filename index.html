@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>QQQ / TQQQ 전략 위젯</title>
+  <title>TQQQ 200일선 전략 위젯</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -22,7 +22,7 @@
       user-select: none;
     }
 
-    /* 1. 상단 바 */
+    /* 상단 헤더 바 */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -87,7 +87,7 @@
     }
     .signal-neutral::before { background: #94a3b8; }
 
-    /* 2. 메인 정보 카드 */
+    /* 메인 정보 카드 */
     .card {
       background: rgba(26, 35, 54, 0.55);
       border: 1px solid rgba(255, 255, 255, 0.07);
@@ -113,7 +113,7 @@
       gap: 6px;
     }
     .tqqq-val {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 900;
       letter-spacing: -0.3px;
       color: #ffffff;
@@ -121,11 +121,6 @@
     .change-val {
       font-size: 12px;
       font-weight: 700;
-    }
-    .qqq-val {
-      font-size: 11px;
-      font-weight: 600;
-      color: #94a3b8;
     }
 
     .chips-group {
@@ -156,11 +151,11 @@
     .val-up { color: #4ade80; }
     .val-down { color: #f87171; }
 
-    /* 이평선 레전드 */
+    /* 이평선 범례 바 */
     .legend-bar {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-size: 9px;
       color: #94a3b8;
       padding-top: 4px;
@@ -168,13 +163,13 @@
     }
     .dot {
       display: inline-block;
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       margin-right: 3px;
     }
 
-    /* 3. 하단 곡선 차트 */
+    /* 하단 볼드 차트 */
     .chart-container {
       width: 100%;
       flex: 1;
@@ -208,10 +203,10 @@
 <body onclick="init()">
   <div id="loading">✨ 위젯 동기화 중...</div>
 
-  <!-- 최상단 타이틀 & 시그널 배지 -->
+  <!-- 최상단 타이틀 & 시그널 -->
   <div class="top-bar">
     <div class="app-title">
-      <span class="title-text">⚡ TQQQ / QQQ 전략</span>
+      <span class="title-text">⚡ TQQQ 200일선 전략</span>
       <span class="update-badge" id="updatedAt">갱신 대기</span>
     </div>
     <div id="todaySignal" class="signal-chip signal-neutral">-</div>
@@ -226,44 +221,39 @@
       </div>
       <div class="chips-group">
         <span class="pill pill-accent" id="strategyState">상태 -</span>
-        <span class="pill" id="activeSellLine">매도선 -</span>
+        <span class="pill" id="activeCriterion">기준 TQQQ 200일선</span>
       </div>
     </div>
 
     <div class="card-row">
-      <div class="qqq-val" id="qqqPrice">QQQ $--</div>
+      <div class="chips-group" style="justify-content: flex-start;">
+        <span class="pill" id="entryDate">진입일 -</span>
+      </div>
       <div class="chips-group">
-        <span class="pill" id="entryDate">진입 -</span>
         <span class="pill pill-return" id="strategyReturn">수익률 -</span>
       </div>
     </div>
 
     <!-- 범례 및 실시간 수치 -->
     <div class="legend-bar">
-      <span><span class="dot" style="background:#fbbf24;"></span>3일 <b id="ma3Val" style="color:#e2e8f0;">-</b></span>
-      <span><span class="dot" style="background:#60a5fa;"></span>161일 <b id="ma161Val" style="color:#e2e8f0;">-</b></span>
-      <span><span class="dot" style="background:#34d399;"></span>185일 <b id="ma185Val" style="color:#e2e8f0;">-</b></span>
+      <span><span class="dot" style="background:#ffffff;"></span>TQQQ 종가</span>
+      <span><span class="dot" style="background:#38bdf8;"></span>200일선 <b id="ma200Val" style="color:#e2e8f0;">-</b></span>
+      <span id="diffFrom200" style="margin-left:auto; font-weight:700;">-</span>
     </div>
   </div>
 
-  <!-- 하단 소프트 차트 -->
+  <!-- 하단 2-라인 볼드 차트 -->
   <div class="chart-container">
     <canvas id="chart"></canvas>
   </div>
 
   <script>
     const SETTINGS = {
-      shortMA: 3,
-      sellMA: 161,
-      baseMA: 185,
-      envelopePct: 0.05,
-      graphDays: 90,
+      baseMA: 200,    // TQQQ 200일 이동평균선
+      graphDays: 100, // 차트 노출 영업일수
       colors: {
-        qqqClose: "#f1f5f9",
-        ma3: "#fbbf24",
-        ma161: "#60a5fa",
-        ma185: "#34d399",
-        env185: "#f43f5e"
+        tqqqClose: "#ffffff",
+        ma200: "#38bdf8"
       }
     };
 
@@ -277,99 +267,55 @@
       return sum / period;
     }
 
+    // TQQQ 자체의 200일 이평선 계산
     function buildIndicators(rows) {
       const closes = rows.map(r => r.close);
       return rows.map((row, idx) => {
-        const ma3 = sma(closes, idx, SETTINGS.shortMA);
-        const ma161 = sma(closes, idx, SETTINGS.sellMA);
-        const ma185 = sma(closes, idx, SETTINGS.baseMA);
-        const envUpper = ma185 != null ? ma185 * (1 + SETTINGS.envelopePct) : null;
-        return { ...row, ma3, ma161, ma185, envUpper };
+        const ma200 = sma(closes, idx, SETTINGS.baseMA);
+        return { ...row, ma200 };
       });
     }
 
-    function simulateStrategy(qqqRows, tqqqRows) {
+    // TQQQ 200일선 기준 매매 시뮬레이션
+    function simulateStrategy(tqqqRows) {
       let state = "미보유";
-      let activeSellLine = "-";
-      let blockReentryToday = false;
       let entryDate = null;
       let entryPrice = null;
       let todaySignal = "관망";
 
-      for (let i = 1; i < qqqRows.length; i++) {
-        const prev = qqqRows[i - 1];
-        const curr = qqqRows[i];
+      for (let i = 1; i < tqqqRows.length; i++) {
+        const prev = tqqqRows[i - 1];
+        const curr = tqqqRows[i];
 
-        if (![prev.ma3, prev.ma161, prev.ma185, prev.envUpper, curr.ma3, curr.ma161, curr.ma185, curr.envUpper].every(v => v != null)) {
-          continue;
-        }
+        if (curr.ma200 == null || prev.ma200 == null) continue;
 
-        blockReentryToday = false;
-        let tradedToday = false;
-        const tqqqPrice = tqqqRows[Math.min(i, tqqqRows.length - 1)]?.close ?? null;
+        const crossUp = prev.close < prev.ma200 && curr.close >= curr.ma200;
+        const crossDown = prev.close >= prev.ma200 && curr.close < curr.ma200;
 
-        const crossUp185 = prev.ma3 < prev.ma185 && curr.ma3 >= curr.ma185;
-        const bandEntry = curr.ma3 >= curr.ma185 && curr.ma3 <= curr.envUpper;
-        const exceptionEntry = curr.ma3 < curr.envUpper && curr.ma3 > curr.ma161 && curr.ma161 > curr.ma185;
-
-        const sellNormal = curr.ma3 < curr.ma161;
-        const sellException = curr.ma3 < curr.ma185;
-        const recoverToNormal = prev.ma3 <= prev.ma161 && curr.ma3 > curr.ma161;
-
-        if (state === "보유(기본)" && sellNormal) {
+        if (state === "보유" && crossDown) {
           state = "미보유";
-          activeSellLine = "-";
           todaySignal = "매도";
-          blockReentryToday = true;
-          tradedToday = true;
-        } else if (state === "보유(예외)" && sellException) {
-          state = "미보유";
-          activeSellLine = "-";
-          todaySignal = "매도";
-          blockReentryToday = true;
-          tradedToday = true;
-        }
-
-        if (!tradedToday && state === "보유(예외)" && recoverToNormal) {
-          state = "보유(기본)";
-          activeSellLine = "161일선";
+        } else if (state === "미보유" && crossUp) {
+          state = "보유";
+          entryDate = curr.date;
+          entryPrice = curr.close;
+          todaySignal = "매수";
+        } else if (state === "보유") {
           todaySignal = "보유";
-        }
-
-        if (!tradedToday && state === "미보유" && !blockReentryToday) {
-          if (exceptionEntry) {
-            state = "보유(예외)";
-            activeSellLine = "185일선";
-            entryDate = curr.date;
-            entryPrice = tqqqPrice;
-            todaySignal = "매수";
-            tradedToday = true;
-          } else if (crossUp185 || bandEntry) {
-            state = "보유(기본)";
-            activeSellLine = "161일선";
-            entryDate = curr.date;
-            entryPrice = tqqqPrice;
-            todaySignal = "매수";
-            tradedToday = true;
-          } else {
-            todaySignal = "관망";
-          }
-        } else if (!tradedToday && state !== "미보유") {
-          todaySignal = "보유";
-          activeSellLine = activeSellLine === "-" ? "161일선" : activeSellLine;
+        } else {
+          todaySignal = "관망";
         }
       }
 
-      const currT = tqqqRows[tqqqRows.length - 1]?.close ?? null;
+      const currPrice = tqqqRows[tqqqRows.length - 1]?.close ?? null;
       let strategyReturnPct = null;
-      if (state !== "미보유" && entryPrice && currT) {
-        strategyReturnPct = ((currT / entryPrice) - 1) * 100;
+      if (state === "보유" && entryPrice && currPrice) {
+        strategyReturnPct = ((currPrice / entryPrice) - 1) * 100;
       }
 
-      return { state, activeSellLine, entryDate, todaySignal, strategyReturnPct };
+      return { state, entryDate, todaySignal, strategyReturnPct };
     }
 
-    // 부드러운 곡선(Bezier Curve) 렌더링 함수
     function drawSmoothLine(ctx, points, color, width, glow = false) {
       if (points.length < 2) return;
 
@@ -380,8 +326,8 @@
       ctx.lineJoin = "round";
 
       if (glow) {
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 8;
+        ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
+        ctx.shadowBlur = 12;
       } else {
         ctx.shadowBlur = 0;
       }
@@ -417,9 +363,9 @@
 
       const w = rect.width;
       const h = rect.height;
-      const pad = { top: 12, right: 6, bottom: 10, left: 6 };
+      const pad = { top: 14, right: 8, bottom: 12, left: 8 };
 
-      const seriesKeys = ["close", "ma3", "ma161", "ma185", "envUpper"];
+      const seriesKeys = ["close", "ma200"];
       const values = [];
       rows.forEach(r => seriesKeys.forEach(k => {
         if (r[k] != null) values.push(r[k]);
@@ -432,7 +378,7 @@
       const chartW = w - pad.left - pad.right;
       const chartH = h - pad.top - pad.bottom;
 
-      // 배경 미세 점선 가이드
+      // 그리드 가이드라인
       ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
       ctx.setLineDash([3, 4]);
       ctx.lineWidth = 1;
@@ -446,11 +392,8 @@
       ctx.setLineDash([]);
 
       const seriesConfig = [
-        { key: "envUpper", color: SETTINGS.colors.env185, width: 1.2 },
-        { key: "ma185", color: SETTINGS.colors.ma185, width: 1.2 },
-        { key: "ma161", color: SETTINGS.colors.ma161, width: 1.4 },
-        { key: "ma3", color: SETTINGS.colors.ma3, width: 1.8 },
-        { key: "close", color: SETTINGS.colors.qqqClose, width: 2.2, glow: true }
+        { key: "ma200", color: SETTINGS.colors.ma200, width: 2.2, glow: false },
+        { key: "close", color: SETTINGS.colors.tqqqClose, width: 3.2, glow: true }
       ];
 
       seriesConfig.forEach(s => {
@@ -464,11 +407,11 @@
           }
         });
 
-        // 메인 주가 선 하단 은은한 그라데이션 광채 채우기
+        // TQQQ 곡선 하단 부드러운 발광 볼륨
         if (s.key === "close" && points.length > 1) {
           const grad = ctx.createLinearGradient(0, pad.top, 0, h);
-          grad.addColorStop(0, "rgba(241, 245, 249, 0.12)");
-          grad.addColorStop(1, "rgba(241, 245, 249, 0.0)");
+          grad.addColorStop(0, "rgba(255, 255, 255, 0.16)");
+          grad.addColorStop(1, "rgba(255, 255, 255, 0.0)");
           ctx.beginPath();
           ctx.moveTo(points[0].x, points[0].y);
           for (let i = 1; i < points.length; i++) {
@@ -494,22 +437,19 @@
         if (!res.ok) throw new Error("파일 없음");
         const data = await res.json();
 
-        const qqqData = data.qqq;
         const tqqqData = data.tqqq;
+        const tqqqWithMA = buildIndicators(tqqqData);
+        const strategy = simulateStrategy(tqqqWithMA);
 
-        const qqqWithMA = buildIndicators(qqqData);
-        const strategy = simulateStrategy(qqqWithMA, tqqqData);
+        const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
+        const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2];
 
-        const latestQQQ = qqqWithMA[qqqWithMA.length - 1];
-        const latestTQQQ = tqqqData[tqqqData.length - 1];
-        const prevTQQQ = tqqqData[tqqqData.length - 2];
-
-        // 시그널 배지
+        // 시그널
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
-        signalEl.className = "signal-chip " + (strategy.todaySignal === "매수" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
+        signalEl.className = "signal-chip " + (strategy.todaySignal === "매수" || strategy.todaySignal === "보유" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
-        // 가격
+        // TQQQ 가격
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
@@ -517,13 +457,11 @@
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
         chgEl.className = "change-val " + (chg >= 0 ? "val-up" : "val-down");
 
-        document.getElementById("qqqPrice").textContent = `QQQ $${latestQQQ.close.toFixed(2)}`;
-
-        // 상태 배지 텍스트
-        document.getElementById("strategyState").textContent = strategy.state;
-        document.getElementById("activeSellLine").textContent = `매도선 ${strategy.activeSellLine}`;
+        // 상태 및 진입일
+        document.getElementById("strategyState").textContent = `상태 ${strategy.state}`;
         document.getElementById("entryDate").textContent = `진입 ${strategy.entryDate ? strategy.entryDate.slice(5) : "-"}`;
 
+        // 전략 수익률
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
           returnEl.textContent = `수익 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(2)}%`;
@@ -532,14 +470,20 @@
           returnEl.textContent = "수익 -";
         }
 
-        // 범례 수치
-        document.getElementById("ma3Val").textContent = `$${latestQQQ.ma3?.toFixed(1)}`;
-        document.getElementById("ma161Val").textContent = `$${latestQQQ.ma161?.toFixed(1)}`;
-        document.getElementById("ma185Val").textContent = `$${latestQQQ.ma185?.toFixed(1)}`;
+        // TQQQ 200일선 수치 및 이격도
+        document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(2)}`;
+
+        if (latestTQQQ.ma200 != null) {
+          const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
+          const diffEl = document.getElementById("diffFrom200");
+          diffEl.textContent = `TQQQ 200일선 대비 ${diffPct >= 0 ? "+" : ""}${diffPct.toFixed(2)}%`;
+          diffEl.className = diffPct >= 0 ? "val-up" : "val-down";
+        }
 
         document.getElementById("updatedAt").textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        drawChart(qqqWithMA.slice(-SETTINGS.graphDays));
+        // TQQQ 기반 차트 렌더링
+        drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
         loader.style.display = "none";
       } catch (err) {
         loader.textContent = "터치하여 갱신";
