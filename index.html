@@ -17,11 +17,11 @@
       color: #f8fafc;
       display: flex;
       flex-direction: column;
-      padding: 6px 10px 4px 10px;
+      /* 위젯 둥근 모서리와 새로고침 버튼 간섭 방지 안전 패딩 */
+      padding: 10px 14px 6px 14px;
       gap: 3px;
       user-select: none;
-      /* 위젯 프레임 비율에 맞춘 압축 높이 */
-      max-height: 185px;
+      max-height: 180px;
     }
 
     /* 1. 상단 정보 한 줄 압축 */
@@ -29,7 +29,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 24px;
+      height: 22px;
+      /* 우측 상단 앱 새로고침 아이콘 피하기 */
+      padding-right: 22px;
     }
     .price-group {
       display: flex;
@@ -37,7 +39,7 @@
       gap: 5px;
     }
     .tqqq-price {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 900;
       color: #ffffff;
       letter-spacing: -0.3px;
@@ -53,18 +55,18 @@
       gap: 4px;
     }
     .pill {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 700;
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 6px;
       background: rgba(255, 255, 255, 0.08);
       color: #cbd5e1;
     }
     .pill-signal {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 8px;
+      padding: 2px 6px;
+      border-radius: 7px;
     }
     .signal-up {
       background: rgba(34, 197, 94, 0.22);
@@ -85,20 +87,20 @@
     .val-up { color: #4ade80; }
     .val-down { color: #f87171; }
 
-    /* 2. 보조 한 줄 텍스트 (범례 & 이격도) */
+    /* 2. 보조 범례 및 이격도 */
     .sub-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 8.5px;
+      font-size: 8px;
       color: #94a3b8;
-      height: 14px;
+      height: 13px;
       padding: 0 1px;
     }
     .legend-box {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
     .dot {
       display: inline-block;
@@ -108,11 +110,11 @@
       margin-right: 2px;
     }
 
-    /* 3. 하단 압축 차트 */
+    /* 3. 차트 캔버스 영역 */
     .chart-box {
       width: 100%;
       flex: 1;
-      min-height: 90px;
+      min-height: 85px;
       position: relative;
     }
     canvas {
@@ -137,7 +139,7 @@
 <body onclick="init()">
   <div id="loading">동기화 중...</div>
 
-  <!-- 1. 최상단 가격 및 핵심 상태 (한 줄로 몰아넣기) -->
+  <!-- 상단 요약 바 -->
   <div class="top-row">
     <div class="price-group">
       <span class="tqqq-price" id="tqqqPrice">TQQQ $--</span>
@@ -150,7 +152,7 @@
     </div>
   </div>
 
-  <!-- 2. 보조 범례 & 200일선 이격도 -->
+  <!-- 보조 범례 바 -->
   <div class="sub-row">
     <div class="legend-box">
       <span><span class="dot" style="background:#ffffff;"></span>종가</span>
@@ -161,7 +163,7 @@
     </div>
   </div>
 
-  <!-- 3. 차트 (프레임 안에 완전히 수납) -->
+  <!-- 메인 캔버스 -->
   <div class="chart-box">
     <canvas id="chart"></canvas>
   </div>
@@ -281,8 +283,8 @@
       const w = rect.width;
       const h = rect.height;
 
-      // 상하좌우 패딩 축소 (세로 짤림 방지)
-      const pad = { top: 6, right: 30, bottom: 12, left: 4 };
+      // 하단 날짜 잘림 방지를 위해 bottom 패딩을 16px로 확보
+      const pad = { top: 6, right: 30, bottom: 16, left: 4 };
 
       const values = [];
       rows.forEach(r => {
@@ -301,7 +303,7 @@
       const chartW = w - pad.left - pad.right;
       const chartH = h - pad.top - pad.bottom;
 
-      // 1. Y축 가이드선 및 가격 (2단계로 간소화)
+      // 1. Y축 가이드선 및 가격
       ctx.font = "8px -apple-system, sans-serif";
       ctx.fillStyle = SETTINGS.colors.axisText;
       ctx.textAlign = "left";
@@ -324,7 +326,7 @@
       });
       ctx.setLineDash([]);
 
-      // 2. X축 날짜
+      // 2. X축 날짜 (텍스트를 캔버스 안쪽으로 안전하게 배치)
       ctx.textBaseline = "bottom";
       const xIndices = [0, Math.floor((rows.length - 1) / 2), rows.length - 1];
       xIndices.forEach((idx, i) => {
@@ -338,7 +340,7 @@
         else if (i === xIndices.length - 1) ctx.textAlign = "right";
         else ctx.textAlign = "center";
 
-        ctx.fillText(dateStr, x, h);
+        ctx.fillText(dateStr, x, h - 2);
       });
 
       // 3. 곡선 렌더링
@@ -358,7 +360,6 @@
           }
         });
 
-        // 은은한 발광 볼륨 채우기
         if (s.key === "close" && points.length > 1) {
           const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
           grad.addColorStop(0, "rgba(255, 255, 255, 0.12)");
@@ -395,12 +396,12 @@
         const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
         const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2];
 
-        // 1. 시그널 배지
+        // 1. 시그널
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
         signalEl.className = "pill-signal " + (strategy.todaySignal === "매수" || strategy.todaySignal === "보유" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
-        // 2. 가격 및 변동
+        // 2. 가격
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
@@ -408,7 +409,7 @@
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
         chgEl.className = "tqqq-change " + (chg >= 0 ? "val-up" : "val-down");
 
-        // 3. 상태 및 수익률
+        // 3. 상태 & 수익률
         document.getElementById("strategyState").textContent = strategy.state;
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
@@ -418,7 +419,7 @@
           returnEl.textContent = "수익 -";
         }
 
-        // 4. 서브 바 수치
+        // 4. 서브 바
         document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(1)}`;
         if (latestTQQQ.ma200 != null) {
           const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
@@ -427,7 +428,7 @@
           diffEl.className = diffPct >= 0 ? "val-up" : "val-down";
         }
 
-        // 5. 차트 그리기
+        // 5. 차트 렌더링
         drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
         loader.style.display = "none";
       } catch (err) {
