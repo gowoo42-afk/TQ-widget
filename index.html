@@ -6,17 +6,18 @@
   <title>TQQQ 200일선 전략 위젯</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html {
-      background-color: #0f172a;
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #0f172a !important;
+      overflow: hidden;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Segoe UI", Roboto, Helvetica, sans-serif;
-      background-color: #0f172a;
       color: #f8fafc;
       width: 100vw;
       height: 150px !important;
       max-height: 150px !important;
-      overflow: hidden;
       padding: 6px 12px 0 12px;
       user-select: none;
       display: flex;
@@ -29,7 +30,7 @@
       justify-content: space-between;
       align-items: center;
       height: 22px;
-      padding-right: 22px; /* 위젯 앱 ↻ 아이콘 간섭 방지 */
+      padding-right: 22px;
       flex-shrink: 0;
       position: relative;
     }
@@ -50,7 +51,7 @@
       font-weight: 700;
     }
 
-    /* 공식 피카츄 캐릭터 (약 2.5배 확대: 42px) */
+    /* 공식 피카츄 캐릭터 (42px) */
     .pika-wrapper {
       display: inline-flex;
       align-items: center;
@@ -58,7 +59,7 @@
       width: 42px;
       height: 42px;
       margin-left: 2px;
-      margin-top: -6px; /* 차트 높이를 해치지 않도록 위로 살짝 띄움 */
+      margin-top: -6px;
       position: relative;
       flex-shrink: 0;
     }
@@ -70,7 +71,7 @@
       transition: filter 0.3s ease;
     }
 
-    /* 매도 / 관망 시 슬픈 피카츄 효과 (톤다운 + 눈물) */
+    /* 매도 / 관망 시 슬픈 피카츄 효과 */
     .pika-sad .pika-img {
       filter: grayscale(45%) brightness(0.85) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
@@ -83,17 +84,9 @@
       box-shadow: 0 0 6px #38bdf8;
       display: none;
     }
-    .tear-left {
-      top: 15px;
-      left: 10px;
-    }
-    .tear-right {
-      top: 15px;
-      right: 12px;
-    }
-    .pika-sad .tear {
-      display: block;
-    }
+    .tear-left { top: 15px; left: 10px; }
+    .tear-right { top: 15px; right: 12px; }
+    .pika-sad .tear { display: block; }
 
     .badge-group {
       display: flex;
@@ -157,7 +150,7 @@
       margin-right: 2px;
     }
 
-    /* 3. 차트 영역: 높이 102px 고정 */
+    /* 3. 차트 영역 */
     .chart-box {
       width: 100%;
       height: 102px !important;
@@ -171,28 +164,15 @@
       height: 102px !important;
       display: block;
     }
-
-    #loading {
-      position: absolute;
-      inset: 0;
-      background-color: #0f172a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 11px;
-      color: #94a3b8;
-      z-index: 30;
-    }
   </style>
 </head>
 <body onclick="init()">
-  <div id="loading">동기화 중...</div>
+  <!-- 화면 가림 원인이었던 full-screen loading 제거 -->
 
   <div class="top-row">
     <div class="price-group">
       <span class="tqqq-price" id="tqqqPrice">TQQQ $--</span>
       <span class="tqqq-change" id="tqqqChange">-</span>
-      <!-- 공식 포켓몬 피카츄 캐릭터 -->
       <div id="pikaWrapper" class="pika-wrapper">
         <img id="pikaImg" class="pika-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" />
         <div class="tear tear-left"></div>
@@ -324,6 +304,7 @@
 
     function drawChart(rows) {
       const canvas = document.getElementById("chart");
+      if (!canvas) return;
       const dpr = window.devicePixelRatio || 1;
       
       const width = canvas.parentElement.clientWidth || (window.innerWidth - 24);
@@ -434,12 +415,9 @@
     }
 
     async function init() {
-      const loader = document.getElementById("loading");
-      if (loader) loader.style.display = "flex";
-
       try {
         const res = await fetch(`./data.json?t=${Date.now()}`);
-        if (!res.ok) throw new Error("파일 없음");
+        if (!res.ok) return;
         const data = await res.json();
 
         const tqqqData = data.tqqq;
@@ -449,13 +427,13 @@
         const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
         const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2];
 
-        // 시그널 배지
+        // 1. 시그널 배지
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
         const isBullish = strategy.todaySignal === "매수" || strategy.todaySignal === "보유";
         signalEl.className = "pill-signal " + (isBullish ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
-        // 공식 피카츄 상태 제어 (매수/보유: 밝은 원본, 매도/관망: 슬픈 톤다운+눈물)
+        // 2. 피카츄 상태
         const pikaWrapper = document.getElementById("pikaWrapper");
         if (isBullish) {
           pikaWrapper.className = "pika-wrapper";
@@ -463,7 +441,7 @@
           pikaWrapper.className = "pika-wrapper pika-sad";
         }
 
-        // 가격
+        // 3. 가격
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
@@ -471,7 +449,7 @@
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
         chgEl.className = "tqqq-change " + (chg >= 0 ? "val-up" : "val-down");
 
-        // 전략 상태 & 수익률
+        // 4. 상태 & 수익률
         document.getElementById("strategyState").textContent = strategy.state;
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
@@ -481,7 +459,7 @@
           returnEl.textContent = "수익 -";
         }
 
-        // 200일선 수치 & 이격도
+        // 5. 200일선
         document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(1)}`;
         if (latestTQQQ.ma200 != null) {
           const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
@@ -491,13 +469,17 @@
         }
 
         drawChart(tqqqWithMA.slice(-SETTINGS.graphDays));
-        if (loader) loader.style.display = "none";
       } catch (err) {
-        if (loader) loader.textContent = "터치하여 갱신";
+        console.error(err);
       }
     }
 
-    window.onload = init;
+    // 문서 로드 완료 즉시 실행
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
     window.onresize = () => init();
   </script>
 </body>
