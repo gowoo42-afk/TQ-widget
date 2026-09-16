@@ -17,21 +17,20 @@
       color: #f8fafc;
       display: flex;
       flex-direction: column;
-      /* 위젯 둥근 모서리와 새로고침 버튼 간섭 방지 안전 패딩 */
-      padding: 10px 14px 6px 14px;
+      /* 가장자리 잘림 방지 안전 여백 */
+      padding: 8px 12px 6px 12px;
       gap: 3px;
       user-select: none;
-      max-height: 180px;
     }
 
-    /* 1. 상단 정보 한 줄 압축 */
+    /* 1. 최상단 가격 & 핵심 상태 */
     .top-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       height: 22px;
-      /* 우측 상단 앱 새로고침 아이콘 피하기 */
-      padding-right: 22px;
+      /* 우측 상단 앱 새로고침 아이콘(↻) 겹침 방지 */
+      padding-right: 24px;
     }
     .price-group {
       display: flex;
@@ -87,7 +86,7 @@
     .val-up { color: #4ade80; }
     .val-down { color: #f87171; }
 
-    /* 2. 보조 범례 및 이격도 */
+    /* 2. 보조 범례 & 이격도 */
     .sub-row {
       display: flex;
       justify-content: space-between;
@@ -110,11 +109,10 @@
       margin-right: 2px;
     }
 
-    /* 3. 차트 캔버스 영역 */
+    /* 3. 차트 영역 */
     .chart-box {
       width: 100%;
       flex: 1;
-      min-height: 85px;
       position: relative;
     }
     canvas {
@@ -283,8 +281,8 @@
       const w = rect.width;
       const h = rect.height;
 
-      // 하단 날짜 잘림 방지를 위해 bottom 패딩을 16px로 확보
-      const pad = { top: 6, right: 30, bottom: 16, left: 4 };
+      // 하단 날짜 잘림 방지 (bottom: 14px)
+      const pad = { top: 4, right: 28, bottom: 14, left: 4 };
 
       const values = [];
       rows.forEach(r => {
@@ -326,7 +324,7 @@
       });
       ctx.setLineDash([]);
 
-      // 2. X축 날짜 (텍스트를 캔버스 안쪽으로 안전하게 배치)
+      // 2. X축 날짜
       ctx.textBaseline = "bottom";
       const xIndices = [0, Math.floor((rows.length - 1) / 2), rows.length - 1];
       xIndices.forEach((idx, i) => {
@@ -340,7 +338,7 @@
         else if (i === xIndices.length - 1) ctx.textAlign = "right";
         else ctx.textAlign = "center";
 
-        ctx.fillText(dateStr, x, h - 2);
+        ctx.fillText(dateStr, x, h);
       });
 
       // 3. 곡선 렌더링
