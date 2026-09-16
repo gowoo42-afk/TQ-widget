@@ -12,112 +12,178 @@
       overflow: hidden;
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
-      color: #f9fafb;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Segoe UI", Roboto, Helvetica, sans-serif;
+      background: linear-gradient(145deg, #0b0f19 0%, #151d30 100%);
+      color: #f3f4f6;
       display: flex;
       flex-direction: column;
-      padding: 10px 12px;
-      gap: 6px;
+      padding: 12px 14px;
+      gap: 10px;
       user-select: none;
     }
 
-    /* 1. 최상단 헤더 */
-    .header {
+    /* 1. 상단 바 */
+    .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .header-left {
+    .app-title {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
     }
-    .title {
+    .title-text {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: -0.4px;
       color: #f9fafb;
-      letter-spacing: -0.3px;
     }
-    .updated-at {
-      font-size: 9px;
-      color: #6b7280;
+    .update-badge {
+      font-size: 10px;
+      font-weight: 500;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 6px;
+      border-radius: 10px;
     }
-    .signal {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.08);
-    }
-    .signal-up { color: #22c55e; }
-    .signal-down { color: #ef4444; }
-    .signal-neutral { color: #9ca3af; }
 
-    /* 2. 상단 통합 정보 패널 */
-    .info-panel {
+    /* 시그널 칩 배지 */
+    .signal-chip {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .signal-chip::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .signal-up {
+      background: rgba(34, 197, 94, 0.16);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+    .signal-up::before { background: #4ade80; }
+
+    .signal-down {
+      background: rgba(239, 68, 68, 0.16);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .signal-down::before { background: #f87171; }
+
+    .signal-neutral {
+      background: rgba(148, 163, 184, 0.14);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .signal-neutral::before { background: #94a3b8; }
+
+    /* 2. 메인 정보 카드 */
+    .card {
+      background: rgba(26, 35, 54, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 9px 12px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      background: rgba(11, 18, 32, 0.45);
-      border-radius: 6px;
-      padding: 6px 8px;
+      gap: 6px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
-    .info-row {
+
+    .card-row {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
     }
 
-    /* 가격 & 변동 */
-    .tqqq-box {
-      display: flex;
-      align-items: baseline;
-      gap: 5px;
-    }
-    .tqqq-price {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: -0.2px;
-    }
-    .change {
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .qqq-box {
-      font-size: 11px;
-      color: #9ca3af;
-    }
-
-    /* 우측 정보 텍스트 */
-    .status-group {
-      font-size: 11px;
-      color: #d1d5db;
-      display: flex;
-      gap: 4px;
-    }
-    .sub-group {
-      font-size: 10px;
-      color: #9ca3af;
+    .price-container {
       display: flex;
       align-items: baseline;
       gap: 6px;
     }
-    .return-text {
+    .tqqq-val {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.3px;
+      color: #ffffff;
+    }
+    .change-val {
+      font-size: 12px;
       font-weight: 700;
     }
+    .qqq-val {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
 
-    .price-up { color: #22c55e; }
-    .price-down { color: #ef4444; }
+    .chips-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .pill-accent {
+      background: rgba(99, 102, 241, 0.18);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .pill-return {
+      font-weight: 800;
+    }
 
-    /* 3. 하단 꽉 찬 차트 */
+    .val-up { color: #4ade80; }
+    .val-down { color: #f87171; }
+
+    /* 이평선 레전드 */
+    .legend-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 9px;
+      color: #94a3b8;
+      padding-top: 4px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+    .dot {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      margin-right: 3px;
+    }
+
+    /* 3. 하단 곡선 차트 */
     .chart-container {
       width: 100%;
       flex: 1;
-      min-height: 48px;
-      background: rgba(11, 18, 32, 0.65);
-      border-radius: 6px;
+      min-height: 60px;
+      background: rgba(14, 20, 34, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 14px;
       position: relative;
+      overflow: hidden;
     }
     canvas {
       width: 100%;
@@ -128,58 +194,59 @@
     #loading {
       position: absolute;
       inset: 0;
-      background: #111827;
+      background: #0b0f19;
       display: flex;
       justify-content: center;
       align-items: center;
       font-size: 12px;
-      color: #9ca3af;
-      z-index: 10;
+      font-weight: 600;
+      color: #94a3b8;
+      z-index: 20;
     }
   </style>
 </head>
 <body onclick="init()">
-  <div id="loading">데이터 동기화 중...</div>
+  <div id="loading">✨ 위젯 동기화 중...</div>
 
-  <!-- 1. 헤더: 타이틀, 갱신시각, 시그널 배지 -->
-  <div class="header">
-    <div class="header-left">
-      <span class="title">QQQ / TQQQ 전략</span>
-      <span class="updated-at" id="updatedAt">갱신 대기</span>
+  <!-- 최상단 타이틀 & 시그널 배지 -->
+  <div class="top-bar">
+    <div class="app-title">
+      <span class="title-text">⚡ TQQQ / QQQ 전략</span>
+      <span class="update-badge" id="updatedAt">갱신 대기</span>
     </div>
-    <span id="todaySignal" class="signal">-</span>
+    <div id="todaySignal" class="signal-chip signal-neutral">-</div>
   </div>
 
-  <!-- 2. 상단 통합 정보 패널 (모든 수치를 상단으로 집중) -->
-  <div class="info-panel">
-    <!-- 1행: TQQQ 현재가 + 상태/매도선 -->
-    <div class="info-row">
-      <div class="tqqq-box">
-        <span class="tqqq-price" id="tqqqPrice">TQQQ -</span>
-        <span class="change" id="tqqqChange">-</span>
+  <!-- 메인 정보 카드 -->
+  <div class="card">
+    <div class="card-row">
+      <div class="price-container">
+        <span class="tqqq-val" id="tqqqPrice">TQQQ $--</span>
+        <span class="change-val" id="tqqqChange">-</span>
       </div>
-      <div class="status-group">
-        <span id="strategyState">상태 -</span>
-        <span>•</span>
-        <span id="activeSellLine">매도선 -</span>
+      <div class="chips-group">
+        <span class="pill pill-accent" id="strategyState">상태 -</span>
+        <span class="pill" id="activeSellLine">매도선 -</span>
       </div>
     </div>
 
-    <!-- 2행: QQQ 종가 + 진입일/전략수익률 + 이평선 요약 -->
-    <div class="info-row">
-      <div class="qqq-box">
-        <span id="qqqPrice">QQQ -</span>
+    <div class="card-row">
+      <div class="qqq-val" id="qqqPrice">QQQ $--</div>
+      <div class="chips-group">
+        <span class="pill" id="entryDate">진입 -</span>
+        <span class="pill pill-return" id="strategyReturn">수익률 -</span>
       </div>
-      <div class="sub-group">
-        <span id="entryDate">진입일 -</span>
-        <span id="strategyReturn" class="return-text">전략 -</span>
-        <span>|</span>
-        <span id="maDetails">3일 - / 161일 -</span>
-      </div>
+    </div>
+
+    <!-- 범례 및 실시간 수치 -->
+    <div class="legend-bar">
+      <span><span class="dot" style="background:#fbbf24;"></span>3일 <b id="ma3Val" style="color:#e2e8f0;">-</b></span>
+      <span><span class="dot" style="background:#60a5fa;"></span>161일 <b id="ma161Val" style="color:#e2e8f0;">-</b></span>
+      <span><span class="dot" style="background:#34d399;"></span>185일 <b id="ma185Val" style="color:#e2e8f0;">-</b></span>
     </div>
   </div>
 
-  <!-- 3. 하단 차트 (위쪽 정보를 제외한 남은 공간을 차지) -->
+  <!-- 하단 소프트 차트 -->
   <div class="chart-container">
     <canvas id="chart"></canvas>
   </div>
@@ -192,12 +259,11 @@
       envelopePct: 0.05,
       graphDays: 90,
       colors: {
-        qqqClose: "#e5e7eb",
-        ma3: "#f59e0b",
-        ma161: "#3b82f6",
-        ma185: "#10b981",
-        env185: "#ef4444",
-        grid: "#374151"
+        qqqClose: "#f1f5f9",
+        ma3: "#fbbf24",
+        ma161: "#60a5fa",
+        ma185: "#34d399",
+        env185: "#f43f5e"
       }
     };
 
@@ -303,6 +369,42 @@
       return { state, activeSellLine, entryDate, todaySignal, strategyReturnPct };
     }
 
+    // 부드러운 곡선(Bezier Curve) 렌더링 함수
+    function drawSmoothLine(ctx, points, color, width, glow = false) {
+      if (points.length < 2) return;
+
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      if (glow) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
+      } else {
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.moveTo(points[0].x, points[0].y);
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i === 0 ? 0 : i - 1];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2] || p2;
+
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
     function drawChart(rows) {
       const canvas = document.getElementById("chart");
       const dpr = window.devicePixelRatio || 1;
@@ -315,19 +417,12 @@
 
       const w = rect.width;
       const h = rect.height;
-      const pad = { top: 6, right: 4, bottom: 6, left: 4 };
+      const pad = { top: 12, right: 6, bottom: 10, left: 6 };
 
-      const series = [
-        { key: "close", color: SETTINGS.colors.qqqClose, width: 1.4 },
-        { key: "ma3", color: SETTINGS.colors.ma3, width: 1.1 },
-        { key: "ma161", color: SETTINGS.colors.ma161, width: 0.9 },
-        { key: "ma185", color: SETTINGS.colors.ma185, width: 0.9 },
-        { key: "envUpper", color: SETTINGS.colors.env185, width: 0.9 }
-      ];
-
+      const seriesKeys = ["close", "ma3", "ma161", "ma185", "envUpper"];
       const values = [];
-      rows.forEach(r => series.forEach(s => {
-        if (r[s.key] != null) values.push(r[s.key]);
+      rows.forEach(r => seriesKeys.forEach(k => {
+        if (r[k] != null) values.push(r[k]);
       }));
 
       if (!values.length) return;
@@ -337,37 +432,56 @@
       const chartW = w - pad.left - pad.right;
       const chartH = h - pad.top - pad.bottom;
 
-      // 그리드 가이드라인
-      ctx.strokeStyle = "rgba(55, 65, 81, 0.4)";
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < 3; i++) {
-        const y = pad.top + (chartH / 2) * i;
+      // 배경 미세 점선 가이드
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      ctx.setLineDash([3, 4]);
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 2; i++) {
+        const y = pad.top + (chartH / 3) * i;
         ctx.beginPath();
         ctx.moveTo(pad.left, y);
         ctx.lineTo(pad.left + chartW, y);
         ctx.stroke();
       }
+      ctx.setLineDash([]);
 
-      // 라인 차트
-      series.forEach(s => {
-        ctx.beginPath();
-        ctx.strokeStyle = s.color;
-        ctx.lineWidth = s.width;
-        let started = false;
+      const seriesConfig = [
+        { key: "envUpper", color: SETTINGS.colors.env185, width: 1.2 },
+        { key: "ma185", color: SETTINGS.colors.ma185, width: 1.2 },
+        { key: "ma161", color: SETTINGS.colors.ma161, width: 1.4 },
+        { key: "ma3", color: SETTINGS.colors.ma3, width: 1.8 },
+        { key: "close", color: SETTINGS.colors.qqqClose, width: 2.2, glow: true }
+      ];
 
+      seriesConfig.forEach(s => {
+        const points = [];
         rows.forEach((r, idx) => {
           const v = r[s.key];
-          if (v == null) return;
-          const x = pad.left + (idx / (rows.length - 1)) * chartW;
-          const y = pad.top + chartH - ((v - minV) / (maxV - minV)) * chartH;
-          if (!started) {
-            ctx.moveTo(x, y);
-            started = true;
-          } else {
-            ctx.lineTo(x, y);
+          if (v != null) {
+            const x = pad.left + (idx / (rows.length - 1)) * chartW;
+            const y = pad.top + chartH - ((v - minV) / (maxV - minV)) * chartH;
+            points.push({ x, y });
           }
         });
-        ctx.stroke();
+
+        // 메인 주가 선 하단 은은한 그라데이션 광채 채우기
+        if (s.key === "close" && points.length > 1) {
+          const grad = ctx.createLinearGradient(0, pad.top, 0, h);
+          grad.addColorStop(0, "rgba(241, 245, 249, 0.12)");
+          grad.addColorStop(1, "rgba(241, 245, 249, 0.0)");
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+          for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+          }
+          ctx.lineTo(points[points.length - 1].x, h);
+          ctx.lineTo(points[0].x, h);
+          ctx.closePath();
+          ctx.fillStyle = grad;
+          ctx.fill();
+        }
+
+        drawSmoothLine(ctx, points, s.color, s.width, s.glow);
       });
     }
 
@@ -390,45 +504,45 @@
         const latestTQQQ = tqqqData[tqqqData.length - 1];
         const prevTQQQ = tqqqData[tqqqData.length - 2];
 
-        // 시그널
+        // 시그널 배지
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
-        signalEl.className = "signal " + (strategy.todaySignal === "매수" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
+        signalEl.className = "signal-chip " + (strategy.todaySignal === "매수" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
-        // TQQQ 가격
+        // 가격
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
         const chgEl = document.getElementById("tqqqChange");
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
-        chgEl.className = "change " + (chg >= 0 ? "price-up" : "price-down");
+        chgEl.className = "change-val " + (chg >= 0 ? "val-up" : "val-down");
 
-        // 상태 / 매도선
-        document.getElementById("strategyState").textContent = `상태 ${strategy.state}`;
-        document.getElementById("activeSellLine").textContent = `매도선 ${strategy.activeSellLine}`;
-
-        // QQQ 종가
         document.getElementById("qqqPrice").textContent = `QQQ $${latestQQQ.close.toFixed(2)}`;
 
-        // 진입일 & 수익률
-        document.getElementById("entryDate").textContent = `진입 ${strategy.entryDate || "-"}`;
+        // 상태 배지 텍스트
+        document.getElementById("strategyState").textContent = strategy.state;
+        document.getElementById("activeSellLine").textContent = `매도선 ${strategy.activeSellLine}`;
+        document.getElementById("entryDate").textContent = `진입 ${strategy.entryDate ? strategy.entryDate.slice(5) : "-"}`;
+
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
-          returnEl.textContent = `전략 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(2)}%`;
-          returnEl.className = "return-text " + (strategy.strategyReturnPct >= 0 ? "price-up" : "price-down");
+          returnEl.textContent = `수익 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(2)}%`;
+          returnEl.className = "pill pill-return " + (strategy.strategyReturnPct >= 0 ? "val-up" : "val-down");
         } else {
-          returnEl.textContent = "전략 -";
+          returnEl.textContent = "수익 -";
         }
 
-        // 이평선 & 갱신시각
-        document.getElementById("maDetails").textContent = `3일 $${latestQQQ.ma3?.toFixed(1)} / 161일 $${latestQQQ.ma161?.toFixed(1)}`;
-        document.getElementById("updatedAt").textContent = `${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 갱신`;
+        // 범례 수치
+        document.getElementById("ma3Val").textContent = `$${latestQQQ.ma3?.toFixed(1)}`;
+        document.getElementById("ma161Val").textContent = `$${latestQQQ.ma161?.toFixed(1)}`;
+        document.getElementById("ma185Val").textContent = `$${latestQQQ.ma185?.toFixed(1)}`;
 
-        // 하단 차트 렌더링
+        document.getElementById("updatedAt").textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         drawChart(qqqWithMA.slice(-SETTINGS.graphDays));
         loader.style.display = "none";
       } catch (err) {
-        loader.textContent = "갱신 실패 (터치 재시도)";
+        loader.textContent = "터치하여 갱신";
       }
     }
 
