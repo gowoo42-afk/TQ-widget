@@ -77,6 +77,8 @@
       font-size: 12px;
       color: #9ca3af;
       z-index: 10;
+      text-align: center;
+      padding: 20px;
     }
   </style>
 </head>
@@ -132,48 +134,77 @@
       }
     };
 
-    // Stooq 일봉 데이터 파싱 (CORS 차단 없는 안전한 통신)
-    async function fetchStooqDaily(symbol) {
-      const ticker = symbol.toLowerCase() + ".us";
-      const targetUrl = `https://stooq.com/q/d/l/?s=${ticker}&i=d`;
+    // 타임아웃 지원 Fetch 래퍼
+    async function fetchWithTimeout(resource, options = {}) {
+      const { timeout = 8000 } = options;
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        const response = await fetch(resource, {
+          ...options,
+          signal: controller.signal
+        });
+        clearTimeout(id);
+        return response;
+      } catch (err) {
+        clearTimeout(id);
+        throw err;
+      }
+    }
+
+    // CORS 우회 및 다중 폴백 데이터 수집 엔진
+    async function fetchStockHistory(symbol) {
+      const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=2y&interval=1d&includePrePost=false`;
       
-      // JSDelivr/AllOrigins 다중 우회
-      const proxies = [
-        `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+      // 안정적인 상용/공용 CORS 브릿지 목록
+      const endpoints = [
+        `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`,
+        `https://thingproxy.freeboard.io/fetch/${yahooUrl}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooUrl)}`
       ];
 
-      let csvText = "";
-      for (const p of proxies) {
+      let lastError = null;
+
+      for (const url of endpoints) {
         try {
-          const res = await fetch(p);
-          if (res.ok) {
-            csvText = await res.text();
-            if (csvText.includes("Date,Open,High,Low,Close")) break;
-          }
-        } catch(e) {}
-      }
+          const res = await fetchWithTimeout(url, { timeout: 6000 });
+          if (!res.ok) continue;
 
-      if (!csvText || !csvText.includes("Date")) {
-        throw new Error("데이터 연결 실패");
-      }
-
-      const lines = csvText.trim().split("\n");
-      const rows = [];
-      // 헤더 제외하고 오래된 순으로 정렬되어야 하므로 reverse
-      for (let i = lines.length - 1; i >= 1; i--) {
-        const parts = lines[i].split(",");
-        if (parts.length >= 5) {
-          const close = parseFloat(parts[4]);
-          if (!isNaN(close)) {
-            rows.push({
-              date: new Date(parts[0]),
-              close: close
-            });
+          const text = await res.text();
+          let json;
+          try {
+            json = JSON.parse(text);
+          } catch(e) {
+            continue;
           }
+
+          const result = json?.chart?.result?.[0];
+          if (!result) continue;
+
+          const timestamps = result.timestamp || [];
+          const quote = result.indicators?.quote?.[0] || {};
+          const closes = quote.close || [];
+
+          const rows = [];
+          for (let i = 0; i < timestamps.length; i++) {
+            if (closes[i] != null && !isNaN(closes[i])) {
+              rows.push({
+                date: new Date(timestamps[i] * 1000),
+                close: Number(closes[i])
+              });
+            }
+          }
+
+          if (rows.length >= 185) {
+            return rows;
+          }
+        } catch (err) {
+          lastError = err;
         }
       }
-      return rows;
+
+      throw new Error(lastError ? lastError.message : "모든 프록시 통신 실패");
     }
 
     function sma(values, endIdx, period) {
@@ -351,8 +382,8 @@
 
       try {
         const [qqqData, tqqqData] = await Promise.all([
-          fetchStooqDaily("QQQ"),
-          fetchStooqDaily("TQQQ")
+          fetchStockHistory("QQQ"),
+          fetchStockHistory("TQQQ")
         ]);
 
         const qqqWithMA = buildIndicators(qqqData);
@@ -393,11 +424,11 @@
         document.getElementById("updatedAt").textContent = `${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 갱신`;
 
         drawChart(qqqWithMA.slice(-SETTINGS.graphDays));
+        loader.style.display = "none";
       } catch (err) {
-        loader.textContent = "갱신 실패 (화면 터치 시 재시도)";
-        return;
+        loader.textContent = "데이터 갱신 실패 (터치 시 재시도)";
+        console.error(err);
       }
-      loader.style.display = "none";
     }
 
     window.onload = init;
