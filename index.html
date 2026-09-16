@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>QQQ / TQQQ 전략 위젯</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+      color: #f9fafb;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 12px 14px;
+      user-select: none;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .signal { font-size: 13px; font-weight: bold; }
+    .signal-up { color: #22c55e; }
+    .signal-down { color: #ef4444; }
+    .signal-neutral { color: #d1d5db; }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 0;
+    }
+    .price-box { display: flex; flex-direction: column; gap: 2px; }
+    .tqqq-price { font-size: 16px; font-weight: bold; }
+    .change { font-size: 11px; }
+    .qqq-price { font-size: 11px; color: #d1d5db; }
+
+    .status-box { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .state-text { font-size: 12px; color: #d1d5db; }
+    .sell-line { font-size: 11px; color: #d1d5db; }
+
+    .chart-container {
+      width: 100%;
+      height: 65px;
+      background: rgba(11, 18, 32, 0.55);
+      border-radius: 8px;
+      position: relative;
+    }
+    canvas { width: 100%; height: 100%; display: block; }
+
+    .bottom-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #d1d5db;
+      margin-top: 4px;
+    }
+    .bottom-col { display: flex; flex-direction: column; gap: 2px; }
+    .bottom-right { align-items: flex-end; }
+    .price-up { color: #22c55e; }
+    .price-down { color: #ef4444; }
+    .muted { color: #9ca3af; font-size: 9px; }
+
+    #loading {
+      position: absolute;
+      inset: 0;
+      background: #111827;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 12px;
+      color: #9ca3af;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body onclick="init()">
+  <div id="loading">데이터 로딩 중...</div>
+
+  <div class="header">
+    <span>QQQ / TQQQ 전략</span>
+    <span id="todaySignal" class="signal">-</span>
+  </div>
+
+  <div class="top-row">
+    <div class="price-box">
+      <span class="tqqq-price" id="tqqqPrice">TQQQ -</span>
+      <span class="change" id="tqqqChange">-</span>
+      <span class="qqq-price" id="qqqPrice">QQQ -</span>
+    </div>
+    <div class="status-box">
+      <span class="state-text" id="strategyState">상태 -</span>
+      <span class="sell-line" id="activeSellLine">매도선 -</span>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="bottom-row">
+    <div class="bottom-col">
+      <span id="entryDate">진입일 -</span>
+      <span id="strategyReturn">전략 -</span>
+    </div>
+    <div class="bottom-col bottom-right">
+      <span id="maDetails" class="muted">-</span>
+      <span class="muted" id="updatedAt">갱신 대기</span>
+    </div>
+  </div>
+
+  <script>
+    const SETTINGS = {
+      shortMA: 3,
+      sellMA: 161,
+      baseMA: 185,
+      envelopePct: 0.05,
+      graphDays: 90,
+      colors: {
+        qqqClose: "#e5e7eb",
+        ma3: "#f59e0b",
+        ma161: "#3b82f6",
+        ma185: "#10b981",
+        env185: "#ef4444",
+        grid: "#374151"
+      }
+    };
+
+    async function fetchYahooHistory(symbol) {
+      const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=3y&interval=1d&includePrePost=false`;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+      
+      const res = await fetch(proxyUrl);
+      const json = await res.json();
+      const result = json?.chart?.result?.[0];
+      if (!result) return [];
+
+      const timestamps = result.timestamp || [];
+      const quote = result.indicators?.quote?.[0] || {};
+      const closes = quote.close || [];
+
+      const rows = [];
+      for (let i = 0; i < timestamps.length; i++) {
+        if (closes[i] != null) {
+          rows.push({
+            date: new Date(timestamps[i] * 1000),
+            close: closes[i]
+          });
+        }
+      }
+      return rows;
+    }
+
+    function sma(values, endIdx, period) {
+      if (endIdx - period + 1 < 0) return null;
+      let sum = 0;
+      for (let i = endIdx - period + 1; i <= endIdx; i++) {
+        if (values[i] == null) return null;
+        sum += values[i];
+      }
+      return sum / period;
+    }
+
+    function buildIndicators(rows) {
+      const closes = rows.map(r => r.close);
+      return rows.map((row, idx) => {
+        const ma3 = sma(closes, idx, SETTINGS.shortMA);
+        const ma161 = sma(closes, idx, SETTINGS.sellMA);
+        const ma185 = sma(closes, idx, SETTINGS.baseMA);
+        const envUpper = ma185 != null ? ma185 * (1 + SETTINGS.envelopePct) : null;
+        return { ...row, ma3, ma161, ma185, envUpper };
+      });
+    }
+
+    function simulateStrategy(qqqRows, tqqqRows) {
+      let state = "미보유";
+      let activeSellLine = "-";
+      let blockReentryToday = false;
+      let entryDate = null;
+      let entryPrice = null;
+      let todaySignal = "관망";
+
+      for (let i = 1; i < qqqRows.length; i++) {
+        const prev = qqqRows[i - 1];
+        const curr = qqqRows[i];
+
+        if (![prev.ma3, prev.ma161, prev.ma185, prev.envUpper, curr.ma3, curr.ma161, curr.ma185, curr.envUpper].every(v => v != null)) {
+          continue;
+        }
+
+        blockReentryToday = false;
+        let tradedToday = false;
+        const tqqqPrice = tqqqRows[Math.min(i, tqqqRows.length - 1)]?.close ?? null;
+
+        const crossUp185 = prev.ma3 < prev.ma185 && curr.ma3 >= curr.ma185;
+        const bandEntry = curr.ma3 >= curr.ma185 && curr.ma3 <= curr.envUpper;
+        const exceptionEntry = curr.ma3 < curr.envUpper && curr.ma3 > curr.ma161 && curr.ma161 > curr.ma185;
+
+        const sellNormal = curr.ma3 < curr.ma161;
+        const sellException = curr.ma3 < curr.ma185;
+        const recoverToNormal = prev.ma3 <= prev.ma161 && curr.ma3 > curr.ma161;
+
+        if (state === "보유(기본)" && sellNormal) {
+          state = "미보유";
+          activeSellLine = "-";
+          todaySignal = "매도";
+          blockReentryToday = true;
+          tradedToday = true;
+        } else if (state === "보유(예외)" && sellException) {
+          state = "미보유";
+          activeSellLine = "-";
+          todaySignal = "매도";
+          blockReentryToday = true;
+          tradedToday = true;
+        }
+
+        if (!tradedToday && state === "보유(예외)" && recoverToNormal) {
+          state = "보유(기본)";
+          activeSellLine = "161일선";
+          todaySignal = "보유";
+        }
+
+        if (!tradedToday && state === "미보유" && !blockReentryToday) {
+          if (exceptionEntry) {
+            state = "보유(예외)";
+            activeSellLine = "185일선";
+            entryDate = curr.date;
+            entryPrice = tqqqPrice;
+            todaySignal = "매수";
+            tradedToday = true;
+          } else if (crossUp185 || bandEntry) {
+            state = "보유(기본)";
+            activeSellLine = "161일선";
+            entryDate = curr.date;
+            entryPrice = tqqqPrice;
+            todaySignal = "매수";
+            tradedToday = true;
+          } else {
+            todaySignal = "관망";
+          }
+        } else if (!tradedToday && state !== "미보유") {
+          todaySignal = "보유";
+          activeSellLine = activeSellLine === "-" ? "161일선" : activeSellLine;
+        }
+      }
+
+      const currT = tqqqRows[tqqqRows.length - 1]?.close ?? null;
+      let strategyReturnPct = null;
+      if (state !== "미보유" && entryPrice && currT) {
+        strategyReturnPct = ((currT / entryPrice) - 1) * 100;
+      }
+
+      return { state, activeSellLine, entryDate, todaySignal, strategyReturnPct };
+    }
+
+    function drawChart(rows) {
+      const canvas = document.getElementById("chart");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+      const pad = { top: 6, right: 4, bottom: 6, left: 4 };
+
+      const series = [
+        { key: "close", color: SETTINGS.colors.qqqClose, width: 1.5 },
+        { key: "ma3", color: SETTINGS.colors.ma3, width: 1.2 },
+        { key: "ma161", color: SETTINGS.colors.ma161, width: 1.0 },
+        { key: "ma185", color: SETTINGS.colors.ma185, width: 1.0 },
+        { key: "envUpper", color: SETTINGS.colors.env185, width: 1.0 }
+      ];
+
+      const values = [];
+      rows.forEach(r => series.forEach(s => {
+        if (r[s.key] != null) values.push(r[s.key]);
+      }));
+
+      if (!values.length) return;
+
+      const minV = Math.min(...values);
+      const maxV = Math.max(...values);
+      const chartW = w - pad.left - pad.right;
+      const chartH = h - pad.top - pad.bottom;
+
+      // 그리드 라인
+      ctx.strokeStyle = "rgba(55, 65, 81, 0.45)";
+      ctx.lineWidth = 0.6;
+      for (let i = 0; i < 3; i++) {
+        const y = pad.top + (chartH / 2) * i;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + chartW, y);
+        ctx.stroke();
+      }
+
+      // 지표 라인 렌더링
+      series.forEach(s => {
+        ctx.beginPath();
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.width;
+        let started = false;
+
+        rows.forEach((r, idx) => {
+          const v = r[s.key];
+          if (v == null) return;
+          const x = pad.left + (idx / (rows.length - 1)) * chartW;
+          const y = pad.top + chartH - ((v - minV) / (maxV - minV)) * chartH;
+          if (!started) {
+            ctx.moveTo(x, y);
+            started = true;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.stroke();
+      });
+    }
+
+    async function init() {
+      document.getElementById("loading").style.display = "flex";
+      try {
+        const [qqqData, tqqqData] = await Promise.all([
+          fetchYahooHistory("QQQ"),
+          fetchYahooHistory("TQQQ")
+        ]);
+
+        const qqqWithMA = buildIndicators(qqqData);
+        const strategy = simulateStrategy(qqqWithMA, tqqqData);
+
+        const latestQQQ = qqqWithMA[qqqWithMA.length - 1];
+        const latestTQQQ = tqqqData[tqqqData.length - 1];
+        const prevTQQQ = tqqqData[tqqqData.length - 2];
+
+        // 텍스트 바인딩
+        const signalEl = document.getElementById("todaySignal");
+        signalEl.textContent = strategy.todaySignal;
+        signalEl.className = "signal " + (strategy.todaySignal === "매수" ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
+
+        document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
+        
+        const chg = latestTQQQ.close - prevTQQQ.close;
+        const chgPct = (chg / prevTQQQ.close) * 100;
+        const chgEl = document.getElementById("tqqqChange");
+        chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
+        chgEl.className = "change " + (chg >= 0 ? "price-up" : "price-down");
+
+        document.getElementById("qqqPrice").textContent = `QQQ $${latestQQQ.close.toFixed(2)}`;
+        document.getElementById("strategyState").textContent = `상태 ${strategy.state}`;
+        document.getElementById("activeSellLine").textContent = `매도선 ${strategy.activeSellLine}`;
+
+        const entryDateStr = strategy.entryDate ? new Date(strategy.entryDate).toISOString().slice(0, 10) : "-";
+        document.getElementById("entryDate").textContent = `진입일 ${entryDateStr}`;
+
+        const returnEl = document.getElementById("strategyReturn");
+        if (strategy.strategyReturnPct != null) {
+          returnEl.textContent = `전략 ${strategy.strategyReturnPct >= 0 ? "+" : ""}${strategy.strategyReturnPct.toFixed(2)}%`;
+          returnEl.className = strategy.strategyReturnPct >= 0 ? "price-up" : "price-down";
+        } else {
+          returnEl.textContent = "전략 -";
+        }
+
+        document.getElementById("maDetails").textContent = `3일 $${latestQQQ.ma3?.toFixed(1)} / 161일 $${latestQQQ.ma161?.toFixed(1)}`;
+        document.getElementById("updatedAt").textContent = `${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 갱신`;
+
+        // 최근 N일 차트 그리기
+        drawChart(qqqWithMA.slice(-SETTINGS.graphDays));
+      } catch (err) {
+        console.error(err);
+        alert("데이터 갱신 중 오류가 발생했습니다: " + err.message);
+      } finally {
+        document.getElementById("loading").style.display = "none";
+      }
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
