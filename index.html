@@ -14,7 +14,6 @@
       background-color: #0f172a;
       color: #f8fafc;
       width: 100vw;
-      /* 위젯 4x2 비율에 맞춰 전체 높이를 150px로 절대 고정 */
       height: 150px !important;
       max-height: 150px !important;
       overflow: hidden;
@@ -29,7 +28,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 20px;
+      height: 24px;
       padding-right: 22px; /* 위젯 앱 ↻ 아이콘 간섭 방지 */
       flex-shrink: 0;
     }
@@ -49,15 +48,16 @@
       font-weight: 700;
     }
 
-    /* 피카츄 아이콘 */
+    /* 고화질 피카츄 아이콘 (크기 확대 24px + 그림자) */
     .pika-icon {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 18px;
-      height: 18px;
-      margin-left: 2px;
+      width: 24px;
+      height: 24px;
+      margin-left: 3px;
       flex-shrink: 0;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
     }
     .pika-icon svg {
       width: 100%;
@@ -110,7 +110,7 @@
       align-items: center;
       font-size: 8px;
       color: #94a3b8;
-      height: 14px;
+      height: 13px;
       margin-top: 1px;
       flex-shrink: 0;
     }
@@ -127,18 +127,18 @@
       margin-right: 2px;
     }
 
-    /* 3. 차트 영역: 높이 105px로 절대 고정 */
+    /* 3. 차트 영역: 높이 102px 고정 */
     .chart-box {
       width: 100%;
-      height: 105px !important;
-      max-height: 105px !important;
+      height: 102px !important;
+      max-height: 102px !important;
       margin-top: 2px;
       position: relative;
       flex-shrink: 0;
     }
     canvas {
       width: 100%;
-      height: 105px !important;
+      height: 102px !important;
       display: block;
     }
 
@@ -197,41 +197,77 @@
       }
     };
 
-    // 웃는 피카츄 (매수/보유)
+    // 고퀄리티 웃는 피카츄 (정교한 귀 각도, 검은 귀 끝 포인트, 공식 비율 페이스)
     const HAPPY_PIKA_SVG = `
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="22,35 6,2 38,18" fill="#FACC15" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
-        <polygon points="6,2 14,8 24,19 14,19" fill="#1E293B"/>
-        <polygon points="78,35 94,2 62,18" fill="#FACC15" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
-        <polygon points="94,2 86,8 76,19 86,19" fill="#1E293B"/>
-        <ellipse cx="50" cy="58" rx="38" ry="34" fill="#FDE047" stroke="#1E293B" stroke-width="2.5"/>
-        <circle cx="23" cy="65" r="7.5" fill="#EF4444"/>
-        <circle cx="77" cy="65" r="7.5" fill="#EF4444"/>
-        <path d="M 33 51 Q 38 43 43 51" stroke="#1E293B" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <path d="M 57 51 Q 62 43 67 51" stroke="#1E293B" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <circle cx="50" cy="58" r="1.8" fill="#1E293B"/>
-        <path d="M 44 63 Q 50 67 56 63" stroke="#1E293B" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-        <path d="M 45 64 Q 50 74 55 64 Z" fill="#E11D48"/>
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="leftEarClip">
+            <path d="M 32 45 C 24 30 14 10 6 3 C 4 1 8 0 12 1 C 24 6 36 24 44 40 Z"/>
+          </clipPath>
+          <clipPath id="rightEarClip">
+            <path d="M 88 45 C 96 30 106 10 114 3 C 116 1 112 0 108 1 C 96 6 84 24 76 40 Z"/>
+          </clipPath>
+        </defs>
+        <!-- 왼쪽 귀 -->
+        <path d="M 32 45 C 24 30 14 10 6 3 C 4 1 8 0 12 1 C 24 6 36 24 44 40 Z" fill="#FED000" stroke="#231F20" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M 0 0 L 22 0 L 16 18 L 0 8 Z" fill="#231F20" clip-path="url(#leftEarClip)"/>
+        <!-- 오른쪽 귀 -->
+        <path d="M 88 45 C 96 30 106 10 114 3 C 116 1 112 0 108 1 C 96 6 84 24 76 40 Z" fill="#FED000" stroke="#231F20" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M 120 0 L 98 0 L 104 18 L 120 8 Z" fill="#231F20" clip-path="url(#rightEarClip)"/>
+        <!-- 얼굴 실루엣 -->
+        <path d="M 30 52 C 24 64 24 88 38 102 C 50 112 70 112 82 102 C 96 88 96 64 90 52 C 84 40 36 40 30 52 Z" fill="#FED000" stroke="#231F20" stroke-width="2.2"/>
+        <!-- 양볼 홍조 -->
+        <ellipse cx="29" cy="80" rx="9" ry="8.5" fill="#E60012"/>
+        <ellipse cx="91" cy="80" rx="9" ry="8.5" fill="#E60012"/>
+        <!-- 초롱초롱 눈 -->
+        <ellipse cx="42" cy="67" rx="5.5" ry="6" fill="#231F20"/>
+        <circle cx="44" cy="65" r="2.2" fill="#FFFFFF"/>
+        <ellipse cx="78" cy="67" rx="5.5" ry="6" fill="#231F20"/>
+        <circle cx="76" cy="65" r="2.2" fill="#FFFFFF"/>
+        <!-- 코 -->
+        <ellipse cx="60" cy="74" rx="1.8" ry="1.2" fill="#231F20"/>
+        <!-- 입 (활짝 웃는 3모양 입) -->
+        <path d="M 52 79 C 55 82 58 82 60 79 C 62 82 65 82 68 79" stroke="#231F20" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <path d="M 54 81 C 54 91 66 91 66 81 Z" fill="#D84357" stroke="#231F20" stroke-width="1.5"/>
+        <path d="M 57 87 C 60 84 63 84 65 87" fill="#FF8596"/>
       </svg>
     `;
 
-    // 우는 피카츄 (매도/관망)
+    // 고퀄리티 우는 피카츄 (쳐진 귀, 글썽거리는 눈망울, 입체 눈물 방울)
     const SAD_PIKA_SVG = `
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="25,40 2,24 35,28" fill="#FACC15" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
-        <polygon points="2,24 8,30 18,32 10,25" fill="#1E293B"/>
-        <polygon points="75,40 98,24 65,28" fill="#FACC15" stroke="#1E293B" stroke-width="2.5" stroke-linejoin="round"/>
-        <polygon points="98,24 92,30 82,32 90,25" fill="#1E293B"/>
-        <ellipse cx="50" cy="58" rx="38" ry="34" fill="#FDE047" stroke="#1E293B" stroke-width="2.5"/>
-        <circle cx="23" cy="67" r="7" fill="#F87171" opacity="0.85"/>
-        <circle cx="77" cy="67" r="7" fill="#F87171" opacity="0.85"/>
-        <circle cx="37" cy="52" r="5" fill="#1E293B"/>
-        <circle cx="35" cy="50" r="1.8" fill="#FFFFFF"/>
-        <circle cx="63" cy="52" r="5" fill="#1E293B"/>
-        <circle cx="61" cy="50" r="1.8" fill="#FFFFFF"/>
-        <path d="M 33 55 Q 31 63 32 68 Q 34 71 36 68 Q 37 63 35 55 Z" fill="#38BDF8"/>
-        <path d="M 67 55 Q 69 63 68 68 Q 66 71 64 68 Q 63 63 65 55 Z" fill="#38BDF8"/>
-        <path d="M 45 68 Q 50 63 55 68" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="leftEarSadClip">
+            <path d="M 34 50 C 22 45 4 36 1 28 C -1 25 2 24 6 25 C 18 28 32 38 42 46 Z"/>
+          </clipPath>
+          <clipPath id="rightEarSadClip">
+            <path d="M 86 50 C 98 45 116 36 119 28 C 121 25 118 24 114 25 C 102 28 88 38 78 46 Z"/>
+          </clipPath>
+        </defs>
+        <!-- 쳐진 귀 -->
+        <path d="M 34 50 C 22 45 4 36 1 28 C -1 25 2 24 6 25 C 18 28 32 38 42 46 Z" fill="#FED000" stroke="#231F20" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M 0 20 L 15 22 L 10 35 L 0 32 Z" fill="#231F20" clip-path="url(#leftEarSadClip)"/>
+        <path d="M 86 50 C 98 45 116 36 119 28 C 121 25 118 24 114 25 C 102 28 88 38 78 46 Z" fill="#FED000" stroke="#231F20" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M 120 20 L 105 22 L 110 35 L 120 32 Z" fill="#231F20" clip-path="url(#rightEarSadClip)"/>
+        <!-- 얼굴 -->
+        <path d="M 30 52 C 24 64 24 88 38 102 C 50 112 70 112 82 102 C 96 88 96 64 90 52 C 84 40 36 40 30 52 Z" fill="#FED000" stroke="#231F20" stroke-width="2.2"/>
+        <!-- 뺨 -->
+        <ellipse cx="29" cy="82" rx="8.5" ry="8" fill="#F87171" opacity="0.9"/>
+        <ellipse cx="91" cy="82" rx="8.5" ry="8" fill="#F87171" opacity="0.9"/>
+        <!-- 슬픈 눈 (눈물 글썽) -->
+        <ellipse cx="43" cy="69" rx="6" ry="6.5" fill="#231F20"/>
+        <circle cx="41" cy="67" r="2.2" fill="#FFFFFF"/>
+        <circle cx="45" cy="71" r="1.0" fill="#FFFFFF"/>
+        <ellipse cx="77" cy="69" rx="6" ry="6.5" fill="#231F20"/>
+        <circle cx="75" cy="67" r="2.2" fill="#FFFFFF"/>
+        <circle cx="79" cy="71" r="1.0" fill="#FFFFFF"/>
+        <!-- 눈물 줄기 -->
+        <path d="M 38 74 C 35 83 37 90 40 92 C 43 90 43 83 41 74 Z" fill="#38BDF8"/>
+        <path d="M 82 74 C 85 83 83 90 80 92 C 77 90 77 83 79 74 Z" fill="#38BDF8"/>
+        <!-- 코 -->
+        <ellipse cx="60" cy="75" rx="1.6" ry="1.1" fill="#231F20"/>
+        <!-- 시무룩한 입 -->
+        <path d="M 54 84 C 58 80 62 80 66 84" stroke="#231F20" stroke-width="2" stroke-linecap="round" fill="none"/>
       </svg>
     `;
 
@@ -330,7 +366,7 @@
       const dpr = window.devicePixelRatio || 1;
       
       const width = canvas.parentElement.clientWidth || (window.innerWidth - 24);
-      const height = 105; // 캔버스 높이 105px 고정
+      const height = 102;
 
       canvas.width = width * dpr;
       canvas.height = height * dpr;
@@ -452,17 +488,17 @@
         const latestTQQQ = tqqqWithMA[tqqqWithMA.length - 1];
         const prevTQQQ = tqqqWithMA[tqqqWithMA.length - 2];
 
-        // 시그널
+        // 1. 시그널 배지
         const signalEl = document.getElementById("todaySignal");
         signalEl.textContent = strategy.todaySignal;
         const isBullish = strategy.todaySignal === "매수" || strategy.todaySignal === "보유";
         signalEl.className = "pill-signal " + (isBullish ? "signal-up" : strategy.todaySignal === "매도" ? "signal-down" : "signal-neutral");
 
-        // 피카츄 아이콘
+        // 2. 피카츄 아이콘 (24px 고화질 일러스트)
         const pikaEl = document.getElementById("pikaIcon");
         pikaEl.innerHTML = isBullish ? HAPPY_PIKA_SVG : SAD_PIKA_SVG;
 
-        // 가격
+        // 3. 가격
         document.getElementById("tqqqPrice").textContent = `TQQQ $${latestTQQQ.close.toFixed(2)}`;
         const chg = latestTQQQ.close - prevTQQQ.close;
         const chgPct = (chg / prevTQQQ.close) * 100;
@@ -470,7 +506,7 @@
         chgEl.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chgPct >= 0 ? "+" : ""}${chgPct.toFixed(2)}%)`;
         chgEl.className = "tqqq-change " + (chg >= 0 ? "val-up" : "val-down");
 
-        // 상태 및 수익률
+        // 4. 상태 & 수익률
         document.getElementById("strategyState").textContent = strategy.state;
         const returnEl = document.getElementById("strategyReturn");
         if (strategy.strategyReturnPct != null) {
@@ -480,7 +516,7 @@
           returnEl.textContent = "수익 -";
         }
 
-        // 200일선 수치 및 이격도
+        // 5. 200일선 수치 & 이격도
         document.getElementById("ma200Val").textContent = `$${latestTQQQ.ma200?.toFixed(1)}`;
         if (latestTQQQ.ma200 != null) {
           const diffPct = ((latestTQQQ.close / latestTQQQ.ma200) - 1) * 100;
