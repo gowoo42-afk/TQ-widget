@@ -70,13 +70,13 @@ def create_widget():
     ax.grid(True, linestyle='--', alpha=0.08, color='#FFFFFF')
 
     # 5. 상단 텍스트 배치
-    # TQQQ 가격
+    # TQQQ 가격 (x=0.06)
     fig.text(0.06, 0.88, f"TQQQ ${curr_price:.2f}", fontsize=18, fontweight='bold', color='#FFFFFF')
     
-    # 등락률 (TQQQ 바로 옆 x=0.25로 당김)
+    # 등락률 (간섭 방지를 위해 x=0.32로 여유 있게 이동)
     chg_sign = "+" if chg >= 0 else ""
     chg_color = "#4ADE80" if chg >= 0 else "#F87171"
-    fig.text(0.25, 0.88, f"{chg_sign}{chg:.2f} ({chg_sign}{chg_pct:.2f}%)", 
+    fig.text(0.32, 0.88, f"{chg_sign}{chg:.2f} ({chg_sign}{chg_pct:.2f}%)", 
              fontsize=12, fontweight='bold', color=chg_color)
 
     # 200선 & 이격도
@@ -84,8 +84,8 @@ def create_widget():
     fig.text(0.06, 0.74, f"200선 ${ma200_val:.1f}  |  이격도 {gap_sign}{gap_pct:.1f}%", 
              fontsize=10.5, color='#94A3B8')
 
-    # 상태 배지
-    fig.text(0.80, 0.88, f"● {signal_text}", fontsize=11.5, fontweight='bold', 
+    # 상태 배지 (x=0.79)
+    fig.text(0.79, 0.88, f"● {signal_text}", fontsize=11.5, fontweight='bold', 
              color=signal_color, 
              bbox=dict(boxstyle='round,pad=0.4', facecolor=(0.1, 0.15, 0.25, 0.9), edgecolor=signal_color, linewidth=1.2))
 
@@ -95,7 +95,7 @@ def create_widget():
     plt.close()
     buf.seek(0)
 
-    # 6. 피카츄 합성 (130px로 확대 + 등락률 우측 배치)
+    # 6. 피카츄 합성 (130px 크기 유지 + X: 600px로 우측 이동)
     base_img = Image.open(buf).convert("RGBA")
     pika_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -106,9 +106,8 @@ def create_widget():
         pika_img = ImageEnhance.Color(pika_img).enhance(0.2)
         pika_img = ImageEnhance.Brightness(pika_img).enhance(0.8)
 
-    # 130x130으로 확대 후 등락률 오른쪽에 배치
     pika_img = pika_img.resize((130, 130), Image.Resampling.LANCZOS)
-    base_img.paste(pika_img, (490, 8), pika_img)
+    base_img.paste(pika_img, (600, 8), pika_img)
 
     base_img.save("widget.png", "PNG")
     print("성공: widget.png 파일이 생성되었습니다.")
